@@ -14,24 +14,23 @@
 # limitations under the License.
 #
 # ----------------------------------------------------------------------------
-# Setup API Manager
+# Setup WSO2 API Manager
 # ----------------------------------------------------------------------------
 
-apim_host=$1
-netty_host=$2
+script_dir=$(dirname "$0")
+netty_host=$1
 
 validate() {
     if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 apim_host netty_host"
+        echo "Please provide arguments. Example: $0 netty_host"
         exit 1
     fi
 }
 
-validate $apim_host
 validate $netty_host
 
-base_https_url="https://${apim_host}:9443"
-nio_https_url="https://${apim_host}:8243"
+base_https_url="https://localhost:9443"
+nio_https_url="https://localhost:8243"
 
 curl_command="curl -sk"
 
@@ -53,14 +52,6 @@ confirm() {
             ;;
     esac
 }
-
-# Import Users
-# cookies_file="$(mktemp /tmp/apim-cookies.XXXXXX)"
-
-# curl -sk -c ${cookies_file} ${base_https_url}/carbon/admin/js/csrfPrevention.js > /dev/null
-# csrf_token=$(curl -sik -b ${cookies_file} -X POST -H "FETCH-CSRF-TOKEN: 1" ${base_https_url}/carbon/admin/js/csrfPrevention.js | sed -En 's/^X-CSRF-Token:(.*)/\1/p')
-# curl -sk -c ${cookies_file} -b ${cookies_file} -d "username=admin&password=admin&X-CSRF-Token=${csrf_token}" ${base_https_url}/carbon/admin/login_action.jsp > /dev/null
-# curl -sk -b ${cookies_file} -F "userStore=PRIMARY" -F "usersFile=@users.csv" ${base_https_url}/carbon/user/bulk-import-finish-ajaxprocessor.jsp?X-CSRF-Token=${csrf_token} > /dev/null
 
 # Register Client and Get Access Token
 client_request() {
@@ -126,6 +117,10 @@ else
         exit 1
     fi
 fi
+
+#Write consumer key to file
+mkdir -p "$script_dir/target"
+echo $consumer_key > "$script_dir/target/consumer_key"
 
 echo -ne "\n"
 
@@ -279,4 +274,3 @@ EOF
 create_api "echo" "Echo API"
 echo -ne "\n"
 create_api "mediation" "Mediation API" "$(mediation_out_sequence | tr -d "\n\r")"
-

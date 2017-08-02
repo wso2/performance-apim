@@ -51,7 +51,7 @@ if ! command -v mysql >/dev/null 2>&1; then
     exit 1
 fi
 
-if [[ ! -f "target/tokens.sql" ]]; then
+if [[ ! -f "$script_dir/target/tokens.sql" ]]; then
     # Generate tokens
     $script_dir/generate_tokens.sh 4000
 fi
