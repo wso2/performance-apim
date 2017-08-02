@@ -23,11 +23,22 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
-if pgrep -f "carbon" > /dev/null; then
+carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
+
+if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
     echo "Shutting down APIM"
     $HOME/wso2am-2.1.0/bin/wso2server.sh stop
-    sleep 30
 fi
+
+while true
+do
+    if ! pgrep -f "$carbon_bootstrap_class" > /dev/null; then
+        echo "API Manager stopped"
+        break
+    else
+        sleep 10
+    fi
+done
 
 log_files=($HOME/wso2am-2.1.0/repository/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
@@ -44,4 +55,15 @@ export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xlogg
 echo "Starting APIM"
 $HOME/wso2am-2.1.0/bin/wso2server.sh start
 
-sleep 120
+echo "Checking whether API Manager is started"
+while true 
+do
+    # Check Version service
+    response_code="$(curl -sk -w "%{http_code}" -o /dev/null https://localhost:8243/services/Version)"
+    if [ $response_code -eq 200 ]; then
+        echo "API Manager started"
+        break
+    else
+        sleep 10
+    fi
+done
