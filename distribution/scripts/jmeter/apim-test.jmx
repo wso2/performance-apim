@@ -27,7 +27,7 @@
       </ThreadGroup>
       <hashTree>
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Tokens" enabled="true">
-          <stringProp name="filename">tokens.csv</stringProp>
+          <stringProp name="filename">${__P(tokens)}</stringProp>
           <stringProp name="fileEncoding"></stringProp>
           <stringProp name="variableNames">token</stringProp>
           <stringProp name="delimiter">,</stringProp>
@@ -79,7 +79,14 @@
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout">600000</stringProp>
         </HTTPSamplerProxy>
-        <hashTree/>
+        <hashTree>
+          <SizeAssertion guiclass="SizeAssertionGui" testclass="SizeAssertion" testname="Size Assertion" enabled="true">
+            <stringProp name="Assertion.test_field">SizeAssertion.response_data</stringProp>
+            <stringProp name="SizeAssertion.size">${__P(bytes)}</stringProp>
+            <intProp name="SizeAssertion.operator">3</intProp>
+          </SizeAssertion>
+          <hashTree/>
+        </hashTree>
       </hashTree>
     </hashTree>
     <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="WorkBench" enabled="true">
