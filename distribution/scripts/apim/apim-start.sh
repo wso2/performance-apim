@@ -30,6 +30,8 @@ if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
     $HOME/wso2am-2.1.0/bin/wso2server.sh stop
 fi
 
+echo "Waiting for API Manager to stop"
+
 while true
 do
     if ! pgrep -f "$carbon_bootstrap_class" > /dev/null; then
@@ -55,7 +57,8 @@ export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xlogg
 echo "Starting APIM"
 $HOME/wso2am-2.1.0/bin/wso2server.sh start
 
-echo "Checking whether API Manager is started"
+echo "Waiting for API Manager to start"
+
 while true 
 do
     # Check Version service

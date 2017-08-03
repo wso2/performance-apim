@@ -29,7 +29,7 @@ mysql_connector_jar="$6"
 
 validate() {
     if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 apim_host netty_host mysql_host mysql_user mysql_pw mysql_connector_jar"
+        echo "Please provide arguments. Example: $0 apim_host netty_host mysql_host mysql_user mysql_password mysql_connector_jar"
         exit 1
     fi
 }
@@ -50,7 +50,7 @@ if [[ ! -f $apim_path.zip ]]; then
 fi
 if [[ ! -d $apim_path ]]; then
     echo "Extracting WSO2 API Manager"
-    unzip -q $apim_path.zip
+    unzip -q $apim_path.zip -d $HOME
     echo "API Manager is extracted"
 else
     echo "API Manager is already extracted"
@@ -58,16 +58,22 @@ else
 fi
 
 # Configure WSO2 API Manager
-$script_dir/configure.sh $mysql_host $mysql_user $mysql_pw $mysql_connector_jar
+$script_dir/configure.sh $mysql_host $mysql_user $mysql_password $mysql_connector_jar
 
 # Start API Manager
-$script_dir/apim_start.sh
+$script_dir/apim-start.sh
 
 # Create APIs
-$script_dir/create_apis.sh
+$script_dir/create-apis.sh $apim_host $netty_host
 
 # Generate tokens
-if [[ ! -f "$script_dir/target/tokens.sql" ]]; then
-    $script_dir/generate_tokens.sh 4000
-    mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < "$script_dir/target/tokens.sql"
+tokens_sql="$script_dir/target/tokens.sql"
+if [[ ! -f $tokens_sql ]]; then
+    $script_dir/generate-tokens.sh 4000
 fi
+
+if [[ -f $tokens_sql ]]; then
+    mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
+fi
+
+echo "Completed..."
