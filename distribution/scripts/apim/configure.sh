@@ -51,14 +51,8 @@ if ! command -v mysql >/dev/null 2>&1; then
     exit 1
 fi
 
-if [[ ! -f "$script_dir/target/tokens.sql" ]]; then
-    # Generate tokens
-    $script_dir/generate_tokens.sh 4000
-fi
-
 # Execute Queries
 mysql -h $mysql_host -u $mysql_user -p$mysql_password < "$script_dir/sqls/create-databases.sql"
-mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < "$script_dir/target/tokens.sql"
 
 # Copy configurations after replacing values
 temp_conf=$(mktemp -d /tmp/apim-conf.XXXXXX)

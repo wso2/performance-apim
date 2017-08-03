@@ -29,7 +29,7 @@
     <name>Performance APIM Distribution</name>
     <description>Package for all scripts</description>
 
-     <build>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
