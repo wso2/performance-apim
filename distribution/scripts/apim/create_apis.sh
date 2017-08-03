@@ -14,23 +14,25 @@
 # limitations under the License.
 #
 # ----------------------------------------------------------------------------
-# Setup WSO2 API Manager
+# Create APIs in WSO2 API Manager
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-netty_host=$1
+apim_host=$1
+netty_host=$2
 
 validate() {
     if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 netty_host"
+        echo "Please provide arguments. Example: $0 apim_host netty_host"
         exit 1
     fi
 }
 
+validate $apim_host
 validate $netty_host
 
-base_https_url="https://localhost:9443"
-nio_https_url="https://localhost:8243"
+base_https_url="https://${apim_host}:9443"
+nio_https_url="https://${apim_host}:8243"
 
 curl_command="curl -sk"
 
@@ -222,7 +224,7 @@ create_api() {
         echo "Failed to create $api_name API"
         echo -ne "\n"
         return
-    fi 
+    fi
     echo "Publishing $api_name API"
     local publish_api_status=$($curl_command -w "%{http_code}" -H "Authorization: Bearer $publish_access_token" -X POST "${base_https_url}/api/am/publisher/v0.11/apis/change-lifecycle?apiId=${api_id}&action=Publish")
     if [ $publish_api_status -eq 200 ]; then
