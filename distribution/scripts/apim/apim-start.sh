@@ -52,7 +52,7 @@ echo "Setting Heap to 4GB"
 export JVM_MEM_OPTS="-Xms4g -Xmx4g"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$CARBON_HOME/repository/logs/gc.log"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am-2.1.0/repository/logs/gc.log"
 
 echo "Starting APIM"
 $HOME/wso2am-2.1.0/bin/wso2server.sh start
