@@ -50,7 +50,7 @@ do
     do
         for u in ${concurrent_users[@]}
         do
-            report_location=$PWD/results/${msize}B/${sleep_time}s_sleep/${u}_users
+            report_location=$PWD/results/${msize}B/${sleep_time}ms_sleep/${u}_users
             echo "Report location is ${report_location}"
             mkdir -p $report_location
 
