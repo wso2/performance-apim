@@ -50,7 +50,9 @@ do
     do
         for u in ${concurrent_users[@]}
         do
-            report_location=$PWD/results/${msize}B/${sleep_time}ms_sleep/${u}_users
+            # There are two JMeter Servers
+            total_users=$(($u * 2))
+            report_location=$PWD/results/${msize}B/${sleep_time}ms_sleep/${total_users}_users
             echo "Report location is ${report_location}"
             mkdir -p $report_location
 
