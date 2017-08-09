@@ -70,3 +70,6 @@ do
         sleep 10
     fi
 done
+
+# Wait for another 10 seconds to make sure that the server is ready to accept API requests.
+sleep 10
