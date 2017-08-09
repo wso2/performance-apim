@@ -20,10 +20,10 @@
 filename="summary.csv"
 if [[ ! -f $filename ]]; then
     # Create File and save headers
-    echo -n "Message Size","Sleep Time","Concurrent Users", > $filename
-    echo -n "#Samples","KO","Error %","Average","Min","Max", >> $filename
-    echo -n "90th pct","95th pct","99th pct","Throughput", >> $filename
-    echo "Received","Sent" >> $filename
+    echo -n "Message Size (Bytes)","Sleep Time (ms)","Concurrent Users", > $filename
+    echo -n "# Samples","Error Count","Error %","Average (ms)","Min (ms)","Max (ms)", >> $filename
+    echo -n "90th Percentile (ms)","95th Percentile (ms)","99th Percentile (ms)","Throughput", >> $filename
+    echo "Received (KB/sec)","Sent (KB/sec)" >> $filename
 else
     echo "$filename already exists"
     exit 1
