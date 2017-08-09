@@ -41,27 +41,37 @@ write_column() {
     fi
 }
 
-for dashboard_dir in $(find . -name 'dashboard-measurement')
-do 
-    statisticsTableData=$(grep '#statisticsTable' $dashboard_dir/content/js/dashboard.js | sed  's/^.*"#statisticsTable"), \({.*}\).*$/\1/')
-    echo -ne "Processing $dashboard_dir                                                         \r"
-    message_size=$(echo $dashboard_dir | sed -r 's/.\/([0-9]+)B.*/\1/')
-    sleep_time=$(echo $dashboard_dir | sed -r 's/.*\/([0-9]+)s_sleep.*/\1/')
-    concurrent_users=$(($(echo $dashboard_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/') * 2))
-    echo -n $message_size,$sleep_time,$concurrent_users, >> $filename
-    write_column "$statisticsTableData" 1 false
-    write_column "$statisticsTableData" 2 false
-    write_column "$statisticsTableData" 3 false
-    write_column "$statisticsTableData" 4 false
-    write_column "$statisticsTableData" 5 false
-    write_column "$statisticsTableData" 6 false
-    write_column "$statisticsTableData" 7 false
-    write_column "$statisticsTableData" 8 false
-    write_column "$statisticsTableData" 9 false
-    write_column "$statisticsTableData" 10 false
-    write_column "$statisticsTableData" 11 false
-    write_column "$statisticsTableData" 12 true
+for message_size_dir in $(find . -maxdepth 1 -name '*B' | sort -V)
+do
+    for sleep_time_dir in $(find $message_size_dir -maxdepth 1 -name '*s_sleep' | sort -V)
+    do
+        for user_dir in $(find $sleep_time_dir -maxdepth 1 -name '*_users' | sort -V)
+        do
+            dashboard_data_file=$user_dir/dashboard-measurement/content/js/dashboard.js
+            if [[ ! -f $dashboard_data_file ]]; then
+                echo "WARN: Dashboard data file not found: $dashboard_data_file"
+                exit 1
+            fi
+            statisticsTableData=$(grep '#statisticsTable' $dashboard_data_file | sed  's/^.*"#statisticsTable"), \({.*}\).*$/\1/')
+            echo "Getting data from $dashboard_data_file"
+            message_size=$(echo $message_size_dir | sed -r 's/.\/([0-9]+)B.*/\1/')
+            sleep_time=$(echo $sleep_time_dir | sed -r 's/.*\/([0-9]+)s_sleep.*/\1/')
+            concurrent_users=$(($(echo $user_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/') * 2))
+            echo -n $message_size,$sleep_time,$concurrent_users, >> $filename
+            write_column "$statisticsTableData" 1 false
+            write_column "$statisticsTableData" 2 false
+            write_column "$statisticsTableData" 3 false
+            write_column "$statisticsTableData" 4 false
+            write_column "$statisticsTableData" 5 false
+            write_column "$statisticsTableData" 6 false
+            write_column "$statisticsTableData" 7 false
+            write_column "$statisticsTableData" 8 false
+            write_column "$statisticsTableData" 9 false
+            write_column "$statisticsTableData" 10 false
+            write_column "$statisticsTableData" 11 false
+            write_column "$statisticsTableData" 12 true
+        done
+    done
 done
 
-# Add whitespace to clear progress information
-echo "Created $filename.                                                                          "
+echo "Completed. Open $filename."
