@@ -17,13 +17,35 @@
 # Create a summary report from JMeter results
 # ----------------------------------------------------------------------------
 
+gcviewer_path=$1
+#true or false argument
+include_all=$2
+
+if [[ ! -f $gcviewer_path ]]; then
+    echo "Please specify the path to GCViewer JAR file. Example: $0 gcviewer_jar_file include_all"
+    exit 1
+fi
+
+get_gc_headers() {
+    echo -ne ",$1 GC Throughput (%),$1 Footprint (M),$1 Average of Footprint After Full GC (M)"
+    echo -ne ",$1 Standard Deviation of Footprint After Full GC (M)"
+}
+
 filename="summary.csv"
 if [[ ! -f $filename ]]; then
     # Create File and save headers
     echo -n "Message Size (Bytes)","Sleep Time (ms)","Concurrent Users", > $filename
     echo -n "# Samples","Error Count","Error %","Average (ms)","Min (ms)","Max (ms)", >> $filename
     echo -n "90th Percentile (ms)","95th Percentile (ms)","99th Percentile (ms)","Throughput", >> $filename
-    echo "Received (KB/sec)","Sent (KB/sec)" >> $filename
+    echo -n "Received (KB/sec)","Sent (KB/sec)" >> $filename
+    echo -n $(get_gc_headers "API Manager") >> $filename
+    if [ "$include_all" = true ] ; then
+        echo -n $(get_gc_headers "Netty Service") >> $filename
+        echo -n $(get_gc_headers "JMeter Client") >> $filename
+        echo -n $(get_gc_headers "JMeter Server 01") >> $filename
+        echo -n $(get_gc_headers "JMeter Server 02") >> $filename
+    fi
+    echo -ne "\r\n" >> $filename
 else
     echo "$filename already exists"
     exit 1
@@ -32,13 +54,23 @@ fi
 write_column() {
     statisticsTableData=$1
     index=$2
-    last_column=$3
+    echo -n "," >> $filename
     echo -n "$(echo $statisticsTableData | jq -r ".overall | .data[$index]")" >> $filename
-    if [ "$last_column" = true ] ; then
-        echo -ne "\r\n" >> $filename
-    else
-        echo -n "," >> $filename
-    fi
+}
+
+get_value_from_gc_summary() {
+    echo $(grep -m 1 $2\; $1 | sed -r 's/.*\;(.*)\;.*/\1/' | sed 's/,//g')
+}
+
+write_gc_summary_details() {
+    gc_log_file=$user_dir/$1_gc.log
+    gc_summary_file=/tmp/gc.txt
+    echo "Reading $gc_log_file"
+    java -Xms128m -Xmx128m -jar $gcviewer_path $gc_log_file $gc_summary_file -t SUMMARY &> /dev/null
+    echo -n ",$(get_value_from_gc_summary $gc_summary_file throughput)" >> $filename
+    echo -n ",$(get_value_from_gc_summary $gc_summary_file footprint)" >> $filename
+    echo -n ",$(get_value_from_gc_summary $gc_summary_file avgfootprintAfterFullGC)" >> $filename
+    echo -n ",$(get_value_from_gc_summary $gc_summary_file avgfootprintAfterFullGCσ)" >> $filename
 }
 
 for message_size_dir in $(find . -maxdepth 1 -name '*B' | sort -V)
@@ -57,19 +89,29 @@ do
             message_size=$(echo $message_size_dir | sed -r 's/.\/([0-9]+)B.*/\1/')
             sleep_time=$(echo $sleep_time_dir | sed -r 's/.*\/([0-9]+)s_sleep.*/\1/')
             concurrent_users=$(($(echo $user_dir | sed -r 's/.*\/([0-9]+)_users.*/\1/') * 2))
-            echo -n $message_size,$sleep_time,$concurrent_users, >> $filename
-            write_column "$statisticsTableData" 1 false
-            write_column "$statisticsTableData" 2 false
-            write_column "$statisticsTableData" 3 false
-            write_column "$statisticsTableData" 4 false
-            write_column "$statisticsTableData" 5 false
-            write_column "$statisticsTableData" 6 false
-            write_column "$statisticsTableData" 7 false
-            write_column "$statisticsTableData" 8 false
-            write_column "$statisticsTableData" 9 false
-            write_column "$statisticsTableData" 10 false
-            write_column "$statisticsTableData" 11 false
-            write_column "$statisticsTableData" 12 true
+            echo -n "$message_size,$sleep_time,$concurrent_users" >> $filename
+            write_column "$statisticsTableData" 1
+            write_column "$statisticsTableData" 2
+            write_column "$statisticsTableData" 3
+            write_column "$statisticsTableData" 4
+            write_column "$statisticsTableData" 5
+            write_column "$statisticsTableData" 6
+            write_column "$statisticsTableData" 7
+            write_column "$statisticsTableData" 8
+            write_column "$statisticsTableData" 9
+            write_column "$statisticsTableData" 10
+            write_column "$statisticsTableData" 11
+            write_column "$statisticsTableData" 12
+
+            write_gc_summary_details apim
+            if [ "$include_all" = true ] ; then
+                write_gc_summary_details netty
+                write_gc_summary_details jmeter
+                write_gc_summary_details jmeter1
+                write_gc_summary_details jmeter2
+            fi
+
+            echo -ne "\r\n" >> $filename
         done
     done
 done
