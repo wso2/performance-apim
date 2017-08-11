@@ -80,4 +80,4 @@ do
 done
 echo "COMMIT;" >> $sql_file
 
-echo "Token Genearation Completed.........."
+echo "Token Generation Completed.........."

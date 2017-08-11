@@ -20,26 +20,39 @@
 # This script will run all other scripts to configure and setup WSO2 API Manager
 
 script_dir=$(dirname "$0")
-apim_host=$1
-netty_host=$2
-mysql_host=$3
-mysql_user=$4
-mysql_password=$5
-mysql_connector_jar="$6"
+netty_host=$1
+mysql_host=$2
+mysql_user=$3
+mysql_password=$4
+mysql_connector_jar="$5"
 
 validate() {
     if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 apim_host netty_host mysql_host mysql_user mysql_password mysql_connector_jar"
+        echo "Please provide arguments. Example: $0 netty_host mysql_host mysql_user mysql_password mysql_connector_jar"
         exit 1
     fi
 }
 
-validate $apim_host
+validate_command() {
+    # Check whether given command exists
+    # $1 is the command name
+    # $2 is the package containing command
+    if ! command -v $1 >/dev/null 2>&1; then
+        echo "Please install $2 (sudo apt -y install $2)"
+        exit 1
+    fi
+}
+
 validate $netty_host
 validate $mysql_host
 validate $mysql_user
 validate $mysql_password
 validate $mysql_connector_jar
+
+#Validate commands
+validate_command curl curl
+validate_command mysql mysql-client
+validate_command jq jq
 
 apim_path="$HOME/wso2am-2.1.0"
 
@@ -63,8 +76,8 @@ $script_dir/configure.sh $mysql_host $mysql_user $mysql_password $mysql_connecto
 # Start API Manager
 $script_dir/apim-start.sh
 
-# Create APIs
-$script_dir/create-apis.sh $apim_host $netty_host
+# Create APIs in Local API Manager
+$script_dir/create-apis.sh localhost $netty_host
 
 # Generate tokens
 tokens_sql="$script_dir/target/tokens.sql"

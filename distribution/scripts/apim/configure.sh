@@ -30,6 +30,16 @@ validate() {
     fi
 }
 
+validate_command() {
+    # Check whether given command exists
+    # $1 is the command name
+    # $2 is the package containing command
+    if ! command -v $1 >/dev/null 2>&1; then
+        echo "Please install $2 (sudo apt -y install $2)"
+        exit 1
+    fi
+}
+
 replace_value() {
     echo "Replacing $2 with $3"
     find $1 -type f -exec sed -i -e "s/$2/$3/g" {} \;
@@ -40,25 +50,22 @@ validate $mysql_user
 validate $mysql_password
 validate $mysql_connector_jar
 
+validate_command mysql mysql-client
+
 if [[ ! -f  $mysql_connector_jar  ]]; then
     echo "Please provide the path to MySQL Connector JAR"
     exit 1
 fi
 
-#Check whether mysql command exsits
-if ! command -v mysql >/dev/null 2>&1; then
-    echo "Please install mysql-client (sudo apt -y install mysql-client)"
-    exit 1
-fi
-
 # Execute Queries
+echo "Creating Databases. Please make sure MySQL server 5.7 is installed"
 mysql -h $mysql_host -u $mysql_user -p$mysql_password < "$script_dir/sqls/create-databases.sql"
 
 # Copy configurations after replacing values
 temp_conf=$(mktemp -d /tmp/apim-conf.XXXXXX)
 
 echo "Copying configs to a temporary directory"
-cp -rv conf $temp_conf
+cp -rv $script_dir/conf $temp_conf
 
 replace_value $temp_conf mysql_host $mysql_host
 replace_value $temp_conf mysql_user $mysql_user
