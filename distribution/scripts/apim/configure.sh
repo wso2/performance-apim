@@ -71,7 +71,10 @@ replace_value $temp_conf mysql_host $mysql_host
 replace_value $temp_conf mysql_user $mysql_user
 replace_value $temp_conf mysql_password $mysql_password
 
-apim_path="$HOME/wso2am-2.1.0"
+apim_path=""
+for dir in $HOME/wso2am-*; do
+    [ -d "${dir}" ] && apim_path="${dir}" && break
+done
 
 if [[ -d $apim_path ]]; then
     cp -rv $temp_conf/conf ${apim_path}/repository/
