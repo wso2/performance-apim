@@ -23,7 +23,7 @@ if [[ -d results ]]; then
 fi
 
 jmeter_dir=""
-for dir in ~/apache-jmeter*; do
+for dir in $HOME/apache-jmeter*; do
     [ -d "${dir}" ] && jmeter_dir="${dir}" && break
 done
 export JMETER_HOME="${jmeter_dir}"
@@ -65,6 +65,24 @@ ssh $jmeter1_ssh_host "./payloads/generate-payloads.sh"
 echo "Generating Payloads in $jmeter2_host"
 ssh $jmeter2_ssh_host "./payloads/generate-payloads.sh"
 
+write_server_metrics() {
+    server=$1
+    ssh_host=$2
+    pgrep_pattern=$3
+    command_prefix=""
+    if [[ ! -z $ssh_host ]]; then
+        command_prefix="ssh $ssh_host"
+    fi
+    $command_prefix ss -s > ${report_location}/${server}_ss.txt
+    $command_prefix uptime > ${report_location}/${server}_uptime.txt
+    $command_prefix sar -q > ${report_location}/${server}_loadavg.txt
+    $command_prefix sar -A > ${report_location}/${server}_sar.txt
+    $command_prefix top -bn 1 > ${report_location}/${server}_top.txt
+    if [[ ! -z $pgrep_pattern ]]; then
+        $command_prefix ps u -p \`pgrep -f $pgrep_pattern\` > ${report_location}/${server}_ps.txt
+    fi
+}
+
 for msize in ${message_size[@]}
 do
     for sleep_time in ${backend_sleep_time[@]}
@@ -91,9 +109,11 @@ do
                 -Gpayload=$HOME/${msize}B.json -Gresponse_size=${msize}B -Gtokens=$HOME/tokens.csv \
                 -Gprotocol=https -l ${report_location}/results.jtl
 
-            ss -s > ${report_location}/jmeter_ss.txt
-            ssh $api_ssh_host "ss -s" > ${report_location}/apim_ss.txt
-            ssh $backend_ssh_host "ss -s" > ${report_location}/netty_ss.txt
+            write_server_metrics jmeter
+            write_server_metrics apim $api_ssh_host carbon
+            write_server_metrics netty $backend_ssh_host netty
+            write_server_metrics jmeter1 $jmeter1_ssh_host
+            write_server_metrics jmeter2 $jmeter1_ssh_host
 
             $HOME/jtl-splitter/jtl-splitter.sh ${report_location}/results.jtl 5
             echo "Generating Dashboard for Warmup Period"
@@ -106,27 +126,10 @@ do
 
             scp $jmeter1_ssh_host:jmetergc.log ${report_location}/jmeter1_gc.log
             scp $jmeter2_ssh_host:jmetergc.log ${report_location}/jmeter2_gc.log
-
-            scp $api_ssh_host:wso2am-2.1.0/repository/logs/wso2carbon.log ${report_location}/wso2carbon.log
-            scp $api_ssh_host:wso2am-2.1.0/repository/logs/gc.log ${report_location}/apim_gc.log
+            scp $api_ssh_host:wso2am-*/repository/logs/wso2carbon.log ${report_location}/wso2carbon.log
+            scp $api_ssh_host:wso2am-*/repository/logs/gc.log ${report_location}/apim_gc.log
             scp $backend_ssh_host:netty-service/logs/netty.log ${report_location}/netty.log
             scp $backend_ssh_host:netty-service/logs/nettygc.log ${report_location}/netty_gc.log
-
-            sar -q > ${report_location}/jmeter_loadavg.txt
-            sar -A > ${report_location}/jmeter_sar.txt
-
-            ssh $jmeter1_ssh_host "sar -A" > ${report_location}/jmeter1_sar.txt
-            ssh $jmeter2_ssh_host "sar -A" > ${report_location}/jmeter2_sar.txt
-
-            ssh $api_ssh_host "sar -q" > ${report_location}/apim_loadavg.txt
-            ssh $api_ssh_host "sar -A" > ${report_location}/apim_sar.txt
-            ssh $api_ssh_host "top -bn 1" > ${report_location}/apim_top.txt
-            ssh $api_ssh_host "ps u -p \`pgrep -f carbon\`" > ${report_location}/apim_ps.txt
-
-            ssh $backend_ssh_host "sar -q" > ${report_location}/netty_loadavg.txt
-            ssh $backend_ssh_host "sar -A" > ${report_location}/netty_sar.txt
-            ssh $backend_ssh_host "top -bn 1" > ${report_location}/netty_top.txt
-            ssh $backend_ssh_host "ps u -p \`pgrep -f netty\`" > ${report_location}/netty_ps.txt
         done
     done
 done
