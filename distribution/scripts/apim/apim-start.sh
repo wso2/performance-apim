@@ -28,11 +28,12 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
+apim_version=2.1.0
 carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 
 if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
     echo "Shutting down APIM"
-    $HOME/wso2am-2.1.0/bin/wso2server.sh stop
+    $HOME/wso2am-${apim_version}/bin/wso2server.sh stop
 fi
 
 echo "Waiting for API Manager to stop"
@@ -47,20 +48,20 @@ do
     fi
 done
 
-log_files=($HOME/wso2am-2.1.0/repository/logs/*)
+log_files=($HOME/wso2am-${apim_version}/repository/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp"
-    mv $HOME/wso2am-2.1.0/repository/logs/* /tmp/;
+    mv $HOME/wso2am-${apim_version}/repository/logs/* /tmp/;
 fi
 
 echo "Setting Heap to ${heap_size}GB"
 export JVM_MEM_OPTS="-Xms${heap_size}G -Xmx${heap_size}G"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am-2.1.0/repository/logs/gc.log"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am-${apim_version}/repository/logs/gc.log"
 
 echo "Starting APIM"
-$HOME/wso2am-2.1.0/bin/wso2server.sh start
+$HOME/wso2am-${apim_version}/bin/wso2server.sh start
 
 echo "Waiting for API Manager to start"
 
