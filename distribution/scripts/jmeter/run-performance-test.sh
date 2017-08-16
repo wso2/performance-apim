@@ -22,7 +22,26 @@ if [[ -d results ]]; then
     exit 1
 fi
 
+jmeter_dir=""
+for dir in ~/apache-jmeter*; do
+    [ -d "${dir}" ] && jmeter_dir="${dir}" && break
+done
+export JMETER_HOME="${jmeter_dir}"
 export PATH=$JMETER_HOME/bin:$PATH
+
+validate_command() {
+    # Check whether given command exists
+    # $1 is the command name
+    # $2 is the package containing command
+    if ! command -v $1 >/dev/null 2>&1; then
+        echo "Please install $2 (sudo apt -y install $2)"
+        exit 1
+    fi
+}
+
+validate_command zip zip
+#jq is required to create final reports
+validate_command jq jq
 
 concurrent_users=(50 100 150 500 1000)
 backend_sleep_time=(0 30 500 1000)
@@ -36,6 +55,8 @@ jmeter1_host=172.30.2.13
 jmeter2_host=172.30.2.46
 jmeter1_ssh_host=apimjmeter1
 jmeter2_ssh_host=apimjmeter2
+#Heap Size in GBs
+apim_heap_size=4
 mkdir results
 cp $0 results
 
@@ -56,7 +77,7 @@ do
             echo "Report location is ${report_location}"
             mkdir -p $report_location
 
-            ssh $api_ssh_host "./apim/apim-start.sh"
+            ssh $api_ssh_host "./apim/apim-start.sh $apim_heap_size"
             ssh $backend_ssh_host "./netty-service/netty-start.sh $sleep_time"
 
             # Start remote JMeter servers

@@ -17,6 +17,11 @@
 # Start WSO2 API Manager
 # ----------------------------------------------------------------------------
 
+heap_size=$1
+if [[ -z $heap_size ]]; then
+    heap_size="4"
+fi
+
 jvm_dir=""
 for dir in /usr/lib/jvm/jdk1.8*; do
     [ -d "${dir}" ] && jvm_dir="${dir}" && break
@@ -48,8 +53,8 @@ if [ ${#log_files[@]} -gt 1 ]; then
     mv $HOME/wso2am-2.1.0/repository/logs/* /tmp/;
 fi
 
-echo "Setting Heap to 4GB"
-export JVM_MEM_OPTS="-Xms4g -Xmx4g"
+echo "Setting Heap to ${heap_size}GB"
+export JVM_MEM_OPTS="-Xms${heap_size}G -Xmx${heap_size}G"
 
 echo "Enabling GC Logs"
 export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am-2.1.0/repository/logs/gc.log"
