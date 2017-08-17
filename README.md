@@ -1,5 +1,11 @@
 # Artifacts for WSO2 API Manager Performance Tests
 
+---
+|  Branch | Build Status |
+| :------ |:------------ |
+| master  | [![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=platform-builds/performance-apim)](https://wso2.org/jenkins/job/platform-builds/job/performance-apim/) |
+---
+
 This repository has artifacts to be used for WSO2 API Manager Performance Tests.
 
 The [distribution](distribution) directory has the scripts and the Maven project to build the final distribution package
@@ -8,8 +14,10 @@ The [distribution](distribution) directory has the scripts and the Maven project
 The package (**performance-apim-distribution-${version}.tar.gz**) built by the distribution maven module is the
  package required for API Manager performance tests from this repository.
 
-The (**performance-common-distribution-${version}.tar.gz**) package is also required for performance tests and the
- scripts in this repository depend on the scripts in "performance-common" package.
+The (**performance-common-distribution-${version}.tar.gz**) package is also required for performance tests.
+
+The scripts in this repository depend on the scripts in
+ "[performance-common](https://github.com/wso2/performance-common/)" repository.
 
 **Note:** The scripts are only compatible with **WSO2 API Manager 2.1.0**.
 
@@ -44,8 +52,11 @@ Following is the tree view of the contents inside distribution package.
 
 Each directory has executable scripts.
 
-This package must be extracted in user home directory of all JMeter servers and the API Manager server used for the 
+This package must be extracted in user home directory of all JMeter nodes and the API Manager node used for the
  performance tests.
+
+In addition, please make sure to extract the "performance-common" package to all nodes and install Java, JMeter, and SAR
+ to all nodes by using scripts provided.
 
 **Note:** These scripts will work only on Debian based systems like Ubuntu.
 
@@ -54,11 +65,11 @@ See following sections for more details.
 ### WSO2 API Manager
 
 The "apim" directory has the scripts related to WSO2 API Manager and the configurations. These scripts must be run in
- WSO2 API Manager instance.
+ WSO2 API Manager node.
 
 Following sections have more details about each script.
 
-### setup.sh
+#### setup.sh
 
 The `setup.sh` script is the only script you need to run to set up and configure WSO2 API Manager.
 
@@ -73,7 +84,7 @@ How to run:
 
 Latest MySQL connector must be downloaded.
 
-### configure.sh
+#### configure.sh
 
 The `configure.sh` script creates the databases (for API Manager, Registry, and User store) in MySQL server and
  copies the configurations.
@@ -114,14 +125,14 @@ How to run:
 
 **Note:** This script is called from `setup.sh`.
 
-### generate-tokens.sh
+#### generate-tokens.sh
 
 This script generates tokens to be used by the performance testing script. Two files will be created in the `target`
  directory.
 
 1. tokens.sql: This SQL file is used to insert tokens to the MySQL table. The `setup.sh` uses this SQL file and executes
  the sql file in API Manager MySQL database.
-2. tokens.csv: This file has all tokens and this file must be copied to the user home directory of all JMeter servers.
+2. tokens.csv: This file has all tokens and this file must be copied to the user home directory of all JMeter nodes.
 
 How to run:
 
@@ -137,9 +148,9 @@ Inside "jmeter", directory there are two scripts to run the performance tests an
 #### run-performance-test.sh
 
 The `run-performance-test.sh` script runs the performance tests for different test scenarios. This script must be used
- in the JMeter client instance and it uses the two JMeter servers to load test WSO2 API Manager
+ in the JMeter client node and it uses the two JMeter servers to load test WSO2 API Manager
 
-This script is using ssh config to connect with other servers from JMeter client and get server metrics and log files.
+This script is using ssh config to connect with other nodes from JMeter client and get server metrics and log files.
  Therefore, it is important use a configuration as follows in `~/.ssh/config`
 
 ```
@@ -173,8 +184,8 @@ backend_sleep_time | The different backend sleep times in milliseconds. This is 
 message_size | The different number of message sizes (payloads) in Bytes. This is an array.
 api_host | The API Manager hostname or IP
 api_path | The path of the API to test
-api_ssh_host | The ssh host for the API Manager server
-backend_ssh_host | The ssh host for the server with Netty HTTP Echo Service
+api_ssh_host | The ssh host for the API Manager node
+backend_ssh_host | The ssh host for the node with Netty HTTP Echo Service
 test_duration | Duration of the test in seconds.
 warmup_time | The warmup time in minutes. This is used for JTL Splitter, which is from `performance-common`
 jmeter1_host | The hostname or IP of the JMeter Server 01
@@ -183,7 +194,7 @@ jmeter1_ssh_host | The ssh host for the JMeter Server 01
 jmeter2_ssh_host | The ssh host for the JMeter Server 02
 apim_heap_size | Heap Size in GBs
 
-After changing parameters, the performance tests can be started from the script in the JMeter Client server as shown in
+After changing parameters, the performance tests can be started from the script in the JMeter Client node as shown in
  above diagram. It's recommended to run the tests in `nohup` mode.
 
 For example:
@@ -191,9 +202,6 @@ For example:
 `nohup ./run-performance-test.sh > test.out 2>&1 &`
 
 The results of performance tests will be saved in `results` directory.
-
-**Note:** Please make sure Java, JMeter and SAR are installed using the scripts provided in `performance-commmon`
- package.
 
 #### create-summary-csv.sh
 
