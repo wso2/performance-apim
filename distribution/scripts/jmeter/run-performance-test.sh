@@ -50,7 +50,10 @@ api_host=172.30.2.239
 api_path=/echo/1.0.0
 api_ssh_host=apim
 backend_ssh_host=apimnetty
+# Test Duration in seconds
 test_duration=900
+# Warm-up time in minutes
+warmup_time=5
 jmeter1_host=172.30.2.13
 jmeter2_host=172.30.2.46
 jmeter1_ssh_host=apimjmeter1
@@ -115,7 +118,7 @@ do
             write_server_metrics jmeter1 $jmeter1_ssh_host
             write_server_metrics jmeter2 $jmeter1_ssh_host
 
-            $HOME/jtl-splitter/jtl-splitter.sh ${report_location}/results.jtl 5
+            $HOME/jtl-splitter/jtl-splitter.sh ${report_location}/results.jtl $warmup_time
             echo "Generating Dashboard for Warmup Period"
             jmeter -g ${report_location}/results-warmup.jtl -o $report_location/dashboard-warmup
             echo "Generating Dashboard for Measurement Period"
