@@ -31,6 +31,10 @@ get_gc_headers() {
     echo -ne ",$1 Standard Deviation of Footprint After Full GC (M)"
 }
 
+get_loadavg_headers() {
+    echo -ne ",$1 Load Average - Last 1 minute,$1 Load Average - Last 5 minutes,$1 Load Average - Last 15 minutes"
+}
+
 filename="summary.csv"
 if [[ ! -f $filename ]]; then
     # Create File and save headers
@@ -44,6 +48,13 @@ if [[ ! -f $filename ]]; then
         echo -n $(get_gc_headers "JMeter Client") >> $filename
         echo -n $(get_gc_headers "JMeter Server 01") >> $filename
         echo -n $(get_gc_headers "JMeter Server 02") >> $filename
+    fi
+    echo -n $(get_loadavg_headers "API Manager") >> $filename
+    if [ "$include_all" = true ] ; then
+        echo -n $(get_loadavg_headers "Netty Service") >> $filename
+        echo -n $(get_loadavg_headers "JMeter Client") >> $filename
+        echo -n $(get_loadavg_headers "JMeter Server 01") >> $filename
+        echo -n $(get_loadavg_headers "JMeter Server 02") >> $filename
     fi
     echo -ne "\r\n" >> $filename
 else
@@ -71,6 +82,20 @@ write_gc_summary_details() {
     echo -n ",$(get_value_from_gc_summary $gc_summary_file footprint)" >> $filename
     echo -n ",$(get_value_from_gc_summary $gc_summary_file avgfootprintAfterFullGC)" >> $filename
     echo -n ",$(get_value_from_gc_summary $gc_summary_file avgfootprintAfterFullGCσ)" >> $filename
+}
+
+write_loadavg_details() {
+    loadavg_file=$user_dir/$1_loadavg.txt
+    if [[ -f $loadavg_file ]]; then
+        echo "Reading $loadavg_file"
+        loadavg_values=$(tail -2 $loadavg_file | head -1)
+        loadavg_array=($loadavg_values)
+        echo -n ",${loadavg_array[3]}" >> $filename
+        echo -n ",${loadavg_array[4]}" >> $filename
+        echo -n ",${loadavg_array[5]}" >> $filename
+    else
+        echo -n ",N/A,N/A,N/A" >> $filename
+    fi
 }
 
 for message_size_dir in $(find . -maxdepth 1 -name '*B' | sort -V)
@@ -109,6 +134,14 @@ do
                 write_gc_summary_details jmeter
                 write_gc_summary_details jmeter1
                 write_gc_summary_details jmeter2
+            fi
+
+            write_loadavg_details apim
+            if [ "$include_all" = true ] ; then
+                write_loadavg_details netty
+                write_loadavg_details jmeter
+                write_loadavg_details jmeter1
+                write_loadavg_details jmeter2
             fi
 
             echo -ne "\r\n" >> $filename
