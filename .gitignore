@@ -16,3 +16,6 @@ dependency-reduced-pom.xml
 
 # Logs
 logs
+
+# Python Cache
+__pycache__
