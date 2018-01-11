@@ -262,6 +262,7 @@ Following are the high-level steps to run the performance tests.
 * Install 'System Activity Report' in all servers using the `install-sar.sh` script inside `sar` directory.
 * Install 'Apache JMeter' in all JMeter servers using the `install-jmeter.sh` script inside `jmeter` directory
 * Setup WSO2 API Manager in APIM server using `setup.sh` script.
+* Copy `tokens.csv` file, which is generated from `setup.sh` script, to the user home directory of all JMeter nodes.
 * Run the performance test using `run-performance-test.sh` script.
 * Use `create-summary-csv.sh` to generate a summary.csv file from the test results.
 * Use Python scripts (`create-charts.py` and `create-comparison-charts.py`) to generate charts from the summary results.
