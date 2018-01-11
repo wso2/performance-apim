@@ -116,7 +116,7 @@ do
             write_server_metrics apim $api_ssh_host carbon
             write_server_metrics netty $backend_ssh_host netty
             write_server_metrics jmeter1 $jmeter1_ssh_host
-            write_server_metrics jmeter2 $jmeter1_ssh_host
+            write_server_metrics jmeter2 $jmeter2_ssh_host
 
             $HOME/jtl-splitter/jtl-splitter.sh ${report_location}/results.jtl $warmup_time
             echo "Generating Dashboard for Warmup Period"
