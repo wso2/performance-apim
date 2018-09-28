@@ -65,6 +65,8 @@ do
     ACCESS_TOKEN_KEY="$(get_random_string 36)"
     REFRESH_TOKEN_KEY="$(get_random_string 36)"
     TOKEN_SCOPE_HASH="$(get_random_string 32)"
+    ACCESS_TOKEN_HASH=$(echo -n $ACCESS_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
+    REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "INSERT INTO IDN_OAUTH2_ACCESS_TOKEN (TOKEN_ID, ACCESS_TOKEN, REFRESH_TOKEN, CONSUMER_KEY_ID, AUTHZ_USER, \
         TENANT_ID, USER_DOMAIN, TIME_CREATED, REFRESH_TOKEN_TIME_CREATED, VALIDITY_PERIOD, \
