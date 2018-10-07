@@ -54,7 +54,26 @@ validate_command curl curl
 validate_command mysql mysql-client
 validate_command jq jq
 
-apim_path="$HOME/wso2am-2.1.0"
+apim_download_url="https://github.com/wso2/product-apim/releases/download/v2.6.0-rc3/wso2am-2.6.0-rc3.zip"
+apim_version="2.6.0"
+apim_product="wso2-am-2.6.0"
+
+download_apim()
+{
+    if [[ ! -f $HOME/apim_installer.zip ]]; then
+        echo "Downloading WSO2 API Manager to $HOME"
+        wget -q $apim_download_url -O $HOME/apim_installer.zip
+        echo "Api Manager Downloaded"
+    fi
+    if [[ ! -d $HOME/apim_product ]]; then
+        echo "Extracting WSO2 API Manager"
+        unzip -q $HOME/apim_installer.zip -d $HOME
+        echo "API Manager is extracted"
+    else
+        echo "API Manager is already extracted"
+    fi
+}
+download_apim
 
 # Extract API Manager
 if [[ ! -f $apim_path.zip ]]; then
