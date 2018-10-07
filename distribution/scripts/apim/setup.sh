@@ -75,19 +75,16 @@ download_apim()
 }
 download_apim
 
-# Extract API Manager
-if [[ ! -f $apim_path.zip ]]; then
-    echo "Please download WSO2 API Manager to $HOME"
-    exit 1
-fi
-if [[ ! -d $apim_path ]]; then
-    echo "Extracting WSO2 API Manager"
-    unzip -q $apim_path.zip -d $HOME
-    echo "API Manager is extracted"
-else
-    echo "API Manager is already extracted"
-    exit 1
-fi
+mysql_connector_url="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java_8.0.12-1ubuntu16.04_all.deb"
+download_mysql_connector()
+{
+    if [[ ! -f $HOME/mysql_connector.deb ]]; then
+        echo "Downloading Ballerina distribution"
+        wget -q $mysql_connector_url -O $HOME/mysql_connector.deb
+    fi
+    dpkg i $HOME/mysql_connector.deb
+}
+download_mysql_connector
 
 # Configure WSO2 API Manager
 $script_dir/configure.sh $mysql_host $mysql_user $mysql_password $mysql_connector_jar
