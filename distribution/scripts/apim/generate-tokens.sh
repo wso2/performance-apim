@@ -65,13 +65,20 @@ do
     ACCESS_TOKEN_KEY="$(get_random_string 36)"
     REFRESH_TOKEN_KEY="$(get_random_string 36)"
     TOKEN_SCOPE_HASH="$(get_random_string 32)"
+    ACCESS_TOKEN_HASH=$(echo -n $ACCESS_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
+    REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)      
+    ACCESS_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
+    REFRESH_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
+    
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "INSERT INTO IDN_OAUTH2_ACCESS_TOKEN (TOKEN_ID, ACCESS_TOKEN, REFRESH_TOKEN, CONSUMER_KEY_ID, AUTHZ_USER, \
         TENANT_ID, USER_DOMAIN, TIME_CREATED, REFRESH_TOKEN_TIME_CREATED, VALIDITY_PERIOD, \
-        REFRESH_TOKEN_VALIDITY_PERIOD, TOKEN_SCOPE_HASH, TOKEN_STATE, USER_TYPE, GRANT_TYPE, SUBJECT_IDENTIFIER) \
+        REFRESH_TOKEN_VALIDITY_PERIOD, TOKEN_SCOPE_HASH, TOKEN_STATE, USER_TYPE, GRANT_TYPE, SUBJECT_IDENTIFIER, \
+        ACCESS_TOKEN_HASH,REFRESH_TOKEN_HASH) \
         SELECT '$TOKEN_ID','$ACCESS_TOKEN_KEY','$REFRESH_TOKEN_KEY',ID,'admin',-1234,'PRIMARY', \
         '$NOW','$NOW',99999999000,99999999000,'$TOKEN_SCOPE_HASH', \
-        'ACTIVE','APPLICATION_USER','password','admin@carbon.super' \
+        'ACTIVE','APPLICATION_USER','password','admin@carbon.super','$ACCESS_TOKEN_HASH_JSON', \
+        '$REFRESH_TOKEN_HASH_JSON' \
         FROM IDN_OAUTH_CONSUMER_APPS WHERE CONSUMER_KEY='$consumer_key';" >> $sql_file
     echo INSERT INTO "IDN_OAUTH2_ACCESS_TOKEN_SCOPE (TOKEN_ID, TOKEN_SCOPE, TENANT_ID) \
         VALUES ('$TOKEN_ID','default',-1234);" >> $sql_file
@@ -81,3 +88,4 @@ done
 echo "COMMIT;" >> $sql_file
 
 echo "Token Generation Completed.........."
+

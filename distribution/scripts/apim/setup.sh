@@ -56,7 +56,7 @@ validate_command jq jq
 
 apim_download_url="https://github.com/wso2/product-apim/releases/download/v2.6.0-rc3/wso2am-2.6.0-rc3.zip"
 apim_version="2.6.0"
-apim_product="wso2-am-2.6.0"
+apim_product="wso2am-2.6.0"
 
 download_apim()
 {
@@ -65,7 +65,7 @@ download_apim()
         wget -q $apim_download_url -O $HOME/apim_installer.zip
         echo "Api Manager Downloaded"
     fi
-    if [[ ! -d $HOME/apim_product ]]; then
+    if [[ ! -d $HOME/$apim_product ]]; then
         echo "Extracting WSO2 API Manager"
         unzip -q $HOME/apim_installer.zip -d $HOME
         echo "API Manager is extracted"
@@ -76,21 +76,31 @@ download_apim()
 download_apim
 
 mysql_connector_url="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java_8.0.12-1ubuntu16.04_all.deb"
+mysql_con_jar="mysql-connector-java-8.0.12.jar"
 download_mysql_connector()
 {
     if [[ ! -f $HOME/mysql_connector.deb ]]; then
-        echo "Downloading Ballerina distribution"
+        echo "Downloading mysql connector"
         wget -q $mysql_connector_url -O $HOME/mysql_connector.deb
     fi
-    dpkg i $HOME/mysql_connector.deb
+    if [[ ! -d $HOME/usr/share/java/$mysql_con_jar ]]; then
+        echo "Extracting Mysql connector"
+        ar -x $HOME/mysql_connector.deb
+        echo "Mysql connector is extracted"
+    else
+        echo "Mysql Connector is already extracted"
+    fi
+
 }
 download_mysql_connector
 
 # Configure WSO2 API Manager
-$script_dir/configure.sh $mysql_host $mysql_user $mysql_password $mysql_connector_jar
+$script_dir/configure.sh $mysql_host $mysql_user $mysql_password $HOME/usr/share/java/$mysql_con_jar
+echo "loop1"
 
 # Start API Manager
 $script_dir/apim-start.sh
+echo "loop2"
 
 # Create APIs in Local API Manager
 $script_dir/create-apis.sh localhost $netty_host
