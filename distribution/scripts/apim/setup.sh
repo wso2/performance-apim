@@ -56,9 +56,19 @@ validate_command curl curl
 validate_command mysql mysql-client
 validate_command jq jq
 
-
+jdk_zip="jdk-8u181-linux-x64.tar.gz"
+jdk="jdk1.8.0_181"
+install_java()
+{
+    if [[ -f $HOME/$jdk_zip ]]; then
+        $script_dir/install-java.sh -f $HOME/$jdk
+    else
+        echo "please download oracle jdk to $HOME"
+    fi
+}
+install_java
+:'
 apim_product="wso2am"
-
 download_apim()
 {
     if [[ ! -f $HOME/apim_installer.zip ]]; then
@@ -115,3 +125,4 @@ if [[ -f $tokens_sql ]]; then
 fi
 
 echo "Completed..."
+'
