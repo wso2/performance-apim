@@ -56,18 +56,18 @@ validate_command curl curl
 validate_command mysql mysql-client
 validate_command jq jq
 
+echo $script_dir
 jdk_zip="jdk-8u181-linux-x64.tar.gz"
-jdk="jdk1.8.0_181"
 install_java()
 {
     if [[ -f $HOME/$jdk_zip ]]; then
-        $script_dir/install-java.sh -f $HOME/$jdk
+        sudo ../java/install-java.sh -f $HOME/$jdk_zip
     else
         echo "please download oracle jdk to $HOME"
     fi
 }
 install_java
-:'
+
 apim_product="wso2am"
 download_apim()
 {
@@ -95,7 +95,7 @@ download_mysql_connector()
     fi
     if [[ ! -d $HOME/usr/share/java/$mysql_con_jar ]]; then
         echo "Extracting Mysql connector"
-        ar -x $HOME/mysql_connector.deb
+        dpkg -x $HOME/mysql_connector.deb $HOME
         echo "Mysql connector is extracted"
     else
         echo "Mysql Connector is already extracted"
@@ -125,4 +125,3 @@ if [[ -f $tokens_sql ]]; then
 fi
 
 echo "Completed..."
-'
