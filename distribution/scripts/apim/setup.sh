@@ -24,11 +24,12 @@ netty_host=$1
 mysql_host=$2
 mysql_user=$3
 mysql_password=$4
-mysql_connector_jar="$5"
+mysql_connector_url=$5
+apim_download_url=$6
 
 validate() {
     if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 netty_host mysql_host mysql_user mysql_password mysql_connector_jar"
+        echo "Please provide arguments. Example: $0 netty_host mysql_host mysql_user mysql_password mysql_connector_download_url apim_download_url"
         exit 1
     fi
 }
@@ -47,16 +48,16 @@ validate $netty_host
 validate $mysql_host
 validate $mysql_user
 validate $mysql_password
-validate $mysql_connector_jar
+validate $mysql_connector_url
+validate $apim_download_url
 
 #Validate commands
 validate_command curl curl
 validate_command mysql mysql-client
 validate_command jq jq
 
-apim_download_url="https://github.com/wso2/product-apim/releases/download/v2.6.0-rc3/wso2am-2.6.0-rc3.zip"
-apim_version="2.6.0"
-apim_product="wso2am-2.6.0"
+
+apim_product="wso2am"
 
 download_apim()
 {
@@ -66,16 +67,15 @@ download_apim()
         echo "Api Manager Downloaded"
     fi
     if [[ ! -d $HOME/$apim_product ]]; then
-        echo "Extracting WSO2 API Manager"
-        unzip -q $HOME/apim_installer.zip -d $HOME
-        echo "API Manager is extracted"
-    else
-        echo "API Manager is already extracted"
+        rm -r $HOME/$apim_product
     fi
+    echo "Extracting WSO2 API Manager"
+    unzip -o $HOME/apim_installer.zip -d $HOME
+    mv $HOME/wso2am-* $HOME/wso2am
+    echo "API Manager is extracted"
 }
 download_apim
 
-mysql_connector_url="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java_8.0.12-1ubuntu16.04_all.deb"
 mysql_con_jar="mysql-connector-java-8.0.12.jar"
 download_mysql_connector()
 {
@@ -96,11 +96,10 @@ download_mysql_connector
 
 # Configure WSO2 API Manager
 $script_dir/configure.sh $mysql_host $mysql_user $mysql_password $HOME/usr/share/java/$mysql_con_jar
-echo "loop1"
 
 # Start API Manager
 $script_dir/apim-start.sh
-echo "loop2"
+
 
 # Create APIs in Local API Manager
 $script_dir/create-apis.sh localhost $netty_host
@@ -108,7 +107,7 @@ $script_dir/create-apis.sh localhost $netty_host
 # Generate tokens
 tokens_sql="$script_dir/target/tokens.sql"
 if [[ ! -f $tokens_sql ]]; then
-    $script_dir/generate-tokens.sh 4000
+   $script_dir/generate-tokens.sh 4000
 fi
 
 if [[ -f $tokens_sql ]]; then
