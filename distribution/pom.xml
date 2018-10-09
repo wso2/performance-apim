@@ -28,6 +28,14 @@
     <name>Performance APIM Distribution</name>
     <description>Package for all scripts</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.performance.common</groupId>
+            <artifactId>performance-common-distribution</artifactId>
+            <type>tar.gz</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
