@@ -57,7 +57,7 @@ validate_command mysql mysql-client
 validate_command jq jq
 
 echo $script_dir
-jdk_zip="jdk-8u181-linux-x64.tar.gz"
+jdk_zip="jdk-8*.tar.gz"
 install_java()
 {
     if [[ -f $HOME/$jdk_zip ]]; then
@@ -76,7 +76,7 @@ download_apim()
         wget -q $apim_download_url -O $HOME/apim_installer.zip
         echo "Api Manager Downloaded"
     fi
-    if [[ ! -d $HOME/$apim_product ]]; then
+    if [[ -d $HOME/$apim_product ]]; then
         rm -r $HOME/$apim_product
     fi
     echo "Extracting WSO2 API Manager"
