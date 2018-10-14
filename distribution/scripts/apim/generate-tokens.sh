@@ -88,4 +88,3 @@ done
 echo "COMMIT;" >> $sql_file
 
 echo "Token Generation Completed.........."
-

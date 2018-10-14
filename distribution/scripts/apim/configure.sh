@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Copyright 2017 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,8 +35,8 @@ validate_command() {
     # $1 is the command name
     # $2 is the package containing command
     if ! command -v $1 >/dev/null 2>&1; then
-        echo "Please install $2 (sudo apt -y install $2)"
-        exit 1
+        echo "Installing $2"
+        sudo apt -y install $2
     fi
 }
 

@@ -19,80 +19,99 @@
 
 # This script will run all other scripts to configure and setup WSO2 API Manager
 
+# Make sure the script is running as root.
+if [ "$UID" -ne "0" ]; then
+    echo "You must be root to run $0. Try following"
+    echo "sudo $0"
+    exit 9
+fi
+
+script_name="$0"
 script_dir=$(dirname "$0")
-netty_host=$1
-mysql_host=$2
-mysql_user=$3
-mysql_password=$4
-mysql_connector_url=$5
-apim_download_url=$6
+netty_host=""
+mysql_host=""
+mysql_user=""
+mysql_password=""
+mysql_connector_url=""
+apim_download_url=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 netty_host mysql_host mysql_user mysql_password mysql_connector_download_url apim_download_url"
+while getopts "n:m:u:p:c:a:w:gp" opt; do
+    case "${opt}" in
+    n)
+        netty_host=${OPTARG}
+        ;;
+    m)
+        mysql_host=${OPTARG}
+        ;;
+    u)
+        mysql_user=${OPTARG}
+        ;;
+    p)
+        mysql_password=${OPTARG}
+        ;;
+    c)
+        mysql_connector_url=${OPTARG}
+        ;;
+    a)
+        apim_download_url=${OPTARG}
+        ;;
+    *)
+        opts+=("-${opt}")
+        [[ -n "$OPTARG" ]] && opts+=("$OPTARG")
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+validate()
+{
+    if [[ -z $netty_host ]]; then
+        echo "Please provide the hostname of Netty Service."
+        exit 1
+    fi
+    if [[ -z $mysql_host ]]; then
+        echo "Please provide the hostname of mysql host"
+        exit 1
+    fi
+    if [[ -z $mysql_user ]]; then
+        echo "Please provide the mysql username"
+        exit 1
+    fi
+    if [[ -z $mysql_password ]]; then
+        echo "Please provide the mysql password"
+        exit 1
+    fi
+    if [[ -z $mysql_connector_url ]]; then
+        echo "Please provide the url to download mysql connector"
+        exit 1
+    fi
+    if [[ -z $apim_download_url ]]; then
+        echo "Please provide the url to download Api Manager"
         exit 1
     fi
 }
-
-validate_command() {
-    # Check whether given command exists
-    # $1 is the command name
-    # $2 is the package containing command
-    if ! command -v $1 >/dev/null 2>&1; then
-        echo "Please install $2 (sudo apt -y install $2)"
-        exit 1
-    fi
-}
-
-validate $netty_host
-validate $mysql_host
-validate $mysql_user
-validate $mysql_password
-validate $mysql_connector_url
-validate $apim_download_url
-
-#Validate commands
-validate_command curl curl
-validate_command mysql mysql-client
-validate_command jq jq
+validate
 
 echo $script_dir
 jdk_zip="jdk-8*.tar.gz"
 install_java()
 {
     if [[ -f $HOME/$jdk_zip ]]; then
-        sudo ../java/install-java.sh -f $HOME/$jdk_zip
+        $script_dir ../java/install-java.sh -f $HOME/$jdk_zip
     else
         echo "please download oracle jdk to $HOME"
     fi
 }
-install_java
-
-apim_product="wso2am"
-download_apim()
-{
-    if [[ ! -f $HOME/apim_installer.zip ]]; then
-        echo "Downloading WSO2 API Manager to $HOME"
-        wget -q $apim_download_url -O $HOME/apim_installer.zip
-        echo "Api Manager Downloaded"
-    fi
-    if [[ -d $HOME/$apim_product ]]; then
-        rm -r $HOME/$apim_product
-    fi
-    echo "Extracting WSO2 API Manager"
-    unzip -o $HOME/apim_installer.zip -d $HOME
-    mv $HOME/wso2am-* $HOME/wso2am
-    echo "API Manager is extracted"
-}
-download_apim
+#install_java
 
 mysql_con_jar="mysql-connector-java-8.0.12.jar"
-download_mysql_connector()
+setup_mysql_connector()
 {
     if [[ ! -f $HOME/mysql_connector.deb ]]; then
         echo "Downloading mysql connector"
         wget -q $mysql_connector_url -O $HOME/mysql_connector.deb
     fi
+
     if [[ ! -d $HOME/usr/share/java/$mysql_con_jar ]]; then
         echo "Extracting Mysql connector"
         dpkg -x $HOME/mysql_connector.deb $HOME
@@ -102,7 +121,39 @@ download_mysql_connector()
     fi
 
 }
-download_mysql_connector
+
+apim_product="wso2am"
+function setup()
+{
+    apt -y install curl
+    apt -y install mysql-client
+    apt -y install jq
+    apt -y install unzip
+    apt -y install dpkg
+
+    #download apim zip , if the zip is not available
+    if [[ ! -f $HOME/apim_installer.zip ]]; then
+        echo "Downloading WSO2 API Manager to $HOME"
+        wget -q $apim_download_url -O $HOME/apim_installer.zip
+        echo "Api Manager Downloaded"
+    fi
+
+    #Remove apim product unzipped product if it is already there
+    if [[ -d $HOME/$apim_product ]]; then
+        rm -r $HOME/$apim_product
+    fi
+
+    #Extract the downloaded zip
+    echo "Extracting WSO2 API Manager"
+    unzip -o $HOME/apim_installer.zip -d $HOME
+    mv $HOME/wso2am-* $HOME/wso2am
+    echo "API Manager is extracted"
+
+    $(setup_mysql_connector)
+}
+setup
+
+
 
 # Configure WSO2 API Manager
 $script_dir/configure.sh $mysql_host $mysql_user $mysql_password $HOME/usr/share/java/$mysql_con_jar
