@@ -35,6 +35,21 @@ mysql_password=""
 mysql_connector_url=""
 apim_download_url=""
 
+usageCommand() {
+    echo "-n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -c <mysql_connectot_url> -a <apim_download_url>"
+}
+usageCommand
+
+usageHelp() {
+    echo "-n: The hostname of Netty Service."
+    echo "-m: The hostname of Mysql service"
+    echo "-u: Mysql username"
+    echo "-p: Mysql password"
+    echo "-c: Mysql connector url"
+    echo "-a: The download url of APIM product."
+}
+usageHelp
+
 while getopts "n:m:u:p:c:a:w:gp" opt; do
     case "${opt}" in
     n)
@@ -97,7 +112,7 @@ jdk_zip="jdk-8*.tar.gz"
 install_java()
 {
     if [[ -f $HOME/$jdk_zip ]]; then
-        $script_dir ../java/install-java.sh -f $HOME/$jdk_zip
+        ./java/install-java.sh -f $HOME/$jdk_zip
     else
         echo "please download oracle jdk to $HOME"
     fi
@@ -119,7 +134,6 @@ setup_mysql_connector()
     else
         echo "Mysql Connector is already extracted"
     fi
-
 }
 
 apim_product="wso2am"
@@ -156,14 +170,14 @@ setup
 
 
 # Configure WSO2 API Manager
-$script_dir/configure.sh $mysql_host $mysql_user $mysql_password $HOME/usr/share/java/$mysql_con_jar
+$script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/usr/share/java/$mysql_con_jar
 
 # Start API Manager
 $script_dir/apim-start.sh
 
 
 # Create APIs in Local API Manager
-$script_dir/create-apis.sh localhost $netty_host
+$script_dir/create-apis.sh -a localhost -n $netty_host
 
 # Generate tokens
 tokens_sql="$script_dir/target/tokens.sql"
@@ -174,5 +188,7 @@ fi
 if [[ -f $tokens_sql ]]; then
     mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
 fi
+
+./setup/setup-common.sh "${opts[@]}" "$@"
 
 echo "Completed..."

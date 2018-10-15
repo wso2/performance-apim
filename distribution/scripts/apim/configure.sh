@@ -18,17 +18,53 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-mysql_host=$1
-mysql_user=$2
-mysql_password=$3
-mysql_connector_jar="$4"
+mysql_host=""
+mysql_user=""
+mysql_password=""
+mysql_connector_jar=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 mysql_host mysql_user mysql_pw mysql_connector_jar"
+while getopts "n:m:u:p:c:a:w:gp" opt; do
+    case "${opt}" in
+    m)
+        mysql_host=${OPTARG}
+        ;;
+    u)
+        mysql_user=${OPTARG}
+        ;;
+    p)
+        mysql_password=${OPTARG}
+        ;;
+    c)
+        mysql_connector_jar=${OPTARG}
+        ;;
+    *)
+        opts+=("-${opt}")
+        [[ -n "$OPTARG" ]] && opts+=("$OPTARG")
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+validate()
+{
+    if [[ -z $mysql_host ]]; then
+        echo "Please provide the hostname of mysql host"
+        exit 1
+    fi
+    if [[ -z $mysql_user ]]; then
+        echo "Please provide the mysql username"
+        exit 1
+    fi
+    if [[ -z $mysql_password ]]; then
+        echo "Please provide the mysql password"
+        exit 1
+    fi
+    if [[ -z $mysql_connector_jar ]]; then
+        echo "Please provide the url to download mysql connector"
         exit 1
     fi
 }
+validate
 
 validate_command() {
     # Check whether given command exists
@@ -44,11 +80,6 @@ replace_value() {
     echo "Replacing $2 with $3"
     find $1 -type f -exec sed -i -e "s/$2/$3/g" {} \;
 }
-
-validate $mysql_host
-validate $mysql_user
-validate $mysql_password
-validate $mysql_connector_jar
 
 validate_command mysql mysql-client
 

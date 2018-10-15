@@ -18,19 +18,38 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-apim_host=$1
-netty_host=$2
+apim_host=""
+netty_host=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 apim_host netty_host"
+
+while getopts "n:m:u:p:c:a:w:gp" opt; do
+    case "${opt}" in
+    n)
+        netty_host=${OPTARG}
+        ;;
+    a)
+        apim_host=${OPTARG}
+        ;;
+    *)
+        opts+=("-${opt}")
+        [[ -n "$OPTARG" ]] && opts+=("$OPTARG")
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+validate()
+{
+    if [[ -z $netty_host ]]; then
+        echo "Please provide the hostname of Netty Service."
+        exit 1
+    fi
+    if [[ -z $apim_host ]]; then
+        echo "Please provide the Hostname of Api Manager"
         exit 1
     fi
 }
-
-validate $apim_host
-validate $netty_host
-
+validate
 
 base_https_url="https://${apim_host}:9443"
 nio_https_url="https://${apim_host}:8243"
