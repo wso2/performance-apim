@@ -175,7 +175,6 @@ $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HO
 # Start API Manager
 $script_dir/apim-start.sh
 
-
 # Create APIs in Local API Manager
 $script_dir/create-apis.sh -a localhost -n $netty_host
 
