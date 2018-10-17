@@ -18,16 +18,29 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-tokens_count=$1
+tokens_count=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 tokens_count"
+while getopts "t:m:u:p:c" opt; do
+    case "${opt}" in
+    t)
+        tokens_count=${OPTARG}
+        ;;
+    *)
+        opts+=("-${opt}")
+        [[ -n "$OPTARG" ]] && opts+=("$OPTARG")
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+validate()
+{
+    if [[ -z $tokens_count ]]; then
+        echo "Please provide the Token count"
         exit 1
     fi
 }
-
-validate $tokens_count
+validate
 
 consumer_key_file="$script_dir/target/consumer_key"
 

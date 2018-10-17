@@ -21,7 +21,6 @@ script_dir=$(dirname "$0")
 apim_host=""
 netty_host=""
 
-
 while getopts "n:m:u:p:c:a:w:gp" opt; do
     case "${opt}" in
     n)

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 WSO2 Inc. (http://wso2.org)
+# Copyright 2018 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,12 +35,12 @@ mysql_password=""
 mysql_connector_url=""
 apim_download_url=""
 
-usageCommand() {
+function usageCommand() {
     echo "-n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -c <mysql_connectot_url> -a <apim_download_url>"
 }
-usageCommand
+export -f usageCommand
 
-usageHelp() {
+function usageHelp() {
     echo "-n: The hostname of Netty Service."
     echo "-m: The hostname of Mysql service"
     echo "-u: Mysql username"
@@ -48,7 +48,7 @@ usageHelp() {
     echo "-c: Mysql connector url"
     echo "-a: The download url of APIM product."
 }
-usageHelp
+export -f usageHelp
 
 while getopts "n:m:u:p:c:a:w:gp" opt; do
     case "${opt}" in
@@ -78,7 +78,7 @@ while getopts "n:m:u:p:c:a:w:gp" opt; do
 done
 shift "$((OPTIND - 1))"
 
-validate()
+function validate()
 {
     if [[ -z $netty_host ]]; then
         echo "Please provide the hostname of Netty Service."
@@ -105,19 +105,19 @@ validate()
         exit 1
     fi
 }
-validate
+export -f validate
 
 echo $script_dir
-jdk_zip="jdk-8*.tar.gz"
+jdk_zip="jdk-8u181-linux-x64.tar.gz"
 install_java()
 {
     if [[ -f $HOME/$jdk_zip ]]; then
-        ./java/install-java.sh -f $HOME/$jdk_zip
+        $script_dir/../java/install-java.sh -f $HOME/$jdk_zip
     else
         echo "please download oracle jdk to $HOME"
     fi
 }
-#install_java
+install_java
 
 mysql_con_jar="mysql-connector-java-8.0.12.jar"
 setup_mysql_connector()
@@ -165,7 +165,7 @@ function setup()
 
     $(setup_mysql_connector)
 }
-setup
+export -f setup
 
 
 
@@ -182,13 +182,13 @@ $script_dir/create-apis.sh -a localhost -n $netty_host
 # Generate tokens
 tokens_sql="$script_dir/target/tokens.sql"
 if [[ ! -f $tokens_sql ]]; then
-   $script_dir/generate-tokens.sh 4000
+   $script_dir/generate-tokens.sh -t 4000
 fi
 
 if [[ -f $tokens_sql ]]; then
     mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
 fi
 
-./setup/setup-common.sh "${opts[@]}" "$@"
+$script_dir/setup-common.sh "${opts[@]}" "$@"
 
 echo "Completed..."
