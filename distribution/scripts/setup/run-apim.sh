@@ -27,6 +27,7 @@ mysql_host=""
 mysql_user=""
 mysql_password=""
 
+
 function usageCommand() {
     echo "-n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -c <mysql_connectot_url> -a <apim_download_url>"
 }
@@ -37,6 +38,8 @@ function usageHelp() {
     echo "-m: The hostname of Mysql service"
     echo "-u: Mysql username"
     echo "-p: Mysql password"
+    echo "-c: Mysql connector url"
+    echo "-a: The download url of APIM product."
 }
 export -f usageHelp
 
@@ -81,60 +84,24 @@ function validate()
         exit 1
     fi
 }
-export -f validate
-
-HOME=/home/ubuntu
-echo $script_dir
-jdk_zip="jdk-8u181-linux-x64.tar.gz"
-install_java()
-{
-    if [[ -f $HOME/$jdk_zip ]]; then
-        $script_dir/../java/install-java.sh -f $HOME/$jdk_zip
-    else
-        echo "please download oracle jdk to $HOME"
-    fi
-}
-install_java
-
-
-mysql_con_jar="mysql-connector-java-8.0.12.jar"
-apim_product="wso2am"
-function setup()
-{
-    #Remove apim product unzipped product if it is already there
-    if [[ -d $HOME/$apim_product ]]; then
-     sudo -u ubuntu rm -r $HOME/$apim_product
-    fi
-
-    #Extract the downloaded zip
-    echo "Extracting WSO2 API Manager"
-    sudo -u ubuntu unzip -o $HOME/wso2am.zip -d $HOME
-    sudo -u ubuntu mv $HOME/wso2am-* $HOME/wso2am
-    echo "API Manager is extracted"
-
-}
-setup
-
-$script_dir/setup-common.sh "${opts[@]}" "$@"
+validate
 
 # Configure WSO2 API Manager
-sudo -u ubuntu $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/$mysql_con_jar
+$script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/usr/share/java/$mysql_con_jar
 
 # Start API Manager
-sudo -u ubuntu $script_dir/apim-start.sh
+$script_dir/apim-start.sh
 
 # Create APIs in Local API Manager
-sudo -u ubuntu $script_dir/create-apis.sh -a localhost -n $netty_host
+$script_dir/create-apis.sh -a localhost -n $netty_host
 
 # Generate tokens
 tokens_sql="$script_dir/target/tokens.sql"
 if [[ ! -f $tokens_sql ]]; then
-  sudo -u ubuntu $script_dir/generate-tokens.sh -t 4000
+   $script_dir/generate-tokens.sh -t 4000
 fi
 
 if [[ -f $tokens_sql ]]; then
-  sudo -u ubuntu mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
+    mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
 fi
 
-
-echo "Completed..."

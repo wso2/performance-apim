@@ -103,7 +103,7 @@ replace_value $temp_conf mysql_user $mysql_user
 replace_value $temp_conf mysql_password $mysql_password
 
 apim_path=""
-for dir in $HOME/wso2am-*; do
+for dir in $HOME/wso2am; do
     [ -d "${dir}" ] && apim_path="${dir}" && break
 done
 
