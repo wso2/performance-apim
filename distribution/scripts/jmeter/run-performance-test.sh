@@ -6,6 +6,7 @@ script_dir=$(dirname "$0")
 
 apim_ssh_host=apim
 apim_host=$(get_ssh_hostname $apim_ssh_host)
+scp $apim_ssh_host:setup/target/tokens.csv $HOME/tokens.csv
 
 declare -A test_scenario0=(
     [name]="passthrough"
@@ -32,7 +33,7 @@ function before_execute_test_scenario() {
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol")
     JMETER_JVM_ARGS="-Xbootclasspath/p:/opt/alpnboot/alpnboot.jar"
     echo "Starting APIM service"
-    ssh $apim_ssh_host "./apim/apim-start.sh $heap "
+    ssh $apim_ssh_host "./setup/apim-start.sh $heap "
 }
 
 function after_execute_test_scenario() {

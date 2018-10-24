@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -xe
 # Copyright 2018 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -112,29 +112,26 @@ function setup()
     sudo -u ubuntu mv $HOME/wso2am-* $HOME/wso2am
     echo "API Manager is extracted"
 
+    # Configure WSO2 API Manager
+    sudo -u ubuntu $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/$mysql_con_jar
+
+    # Start API Manager
+    sudo -u ubuntu $script_dir/apim-start.sh
+
+    # Create APIs in Local API Manager
+    sudo -u ubuntu $script_dir/create-apis.sh -a localhost -n $netty_host
+
+    # Generate tokens
+    tokens_sql="$script_dir/target/tokens.sql"
+    if [[ ! -f $tokens_sql ]]; then
+        sudo -u ubuntu $script_dir/generate-tokens.sh -t 4000
+    fi
+
+    if [[ -f $tokens_sql ]]; then
+        sudo -u ubuntu mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
+    fi
 }
-setup
+export -f setup
 
 $script_dir/setup-common.sh "${opts[@]}" "$@"
-
-# Configure WSO2 API Manager
-sudo -u ubuntu $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/$mysql_con_jar
-
-# Start API Manager
-sudo -u ubuntu $script_dir/apim-start.sh
-
-# Create APIs in Local API Manager
-sudo -u ubuntu $script_dir/create-apis.sh -a localhost -n $netty_host
-
-# Generate tokens
-tokens_sql="$script_dir/target/tokens.sql"
-if [[ ! -f $tokens_sql ]]; then
-  sudo -u ubuntu $script_dir/generate-tokens.sh -t 4000
-fi
-
-if [[ -f $tokens_sql ]]; then
-  sudo -u ubuntu mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
-fi
-
-
 echo "Completed..."
