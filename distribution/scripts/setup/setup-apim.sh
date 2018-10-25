@@ -1,4 +1,4 @@
-#!/bin/bash -xe
+#!/bin/bash -e
 # Copyright 2018 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,13 @@ netty_host=""
 mysql_host=""
 mysql_user=""
 mysql_password=""
+mysql_connector_file=""
+apim_product=""
+jdk=""
+os_user=""
 
 function usageCommand() {
-    echo "-n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -c <mysql_connectot_url> -a <apim_download_url>"
+    echo "-n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -c <mysql_connector_file> -a <apim_product> -j oracle jdk -o normal os user(eg: ubuntu)"
 }
 export -f usageCommand
 
@@ -37,6 +41,10 @@ function usageHelp() {
     echo "-m: The hostname of Mysql service"
     echo "-u: Mysql username"
     echo "-p: Mysql password"
+    echo "-c: Mysql Connector File"
+    echo "-a: Apim Product zip"
+    echo "-j: Oracle Jdk file"
+    echo "-o: General user of the OS"
 }
 export -f usageHelp
 
@@ -53,6 +61,18 @@ while getopts "n:m:u:p:c:a:w:gp" opt; do
         ;;
     p)
         mysql_password=${OPTARG}
+        ;;
+    c)
+        mysql_connector_file=${OPTARG}
+        ;;
+    a)
+        apim_product=${OPTARG}
+        ;;
+    j)
+        jdk=${OPTARG}
+        ;;
+    o)
+        os_user=${OPTARG}
         ;;
     *)
         opts+=("-${opt}")
@@ -80,58 +100,63 @@ function validate()
         echo "Please provide the mysql password"
         exit 1
     fi
-}
-export -f validate
-
-HOME=/home/ubuntu
-echo $script_dir
-jdk_zip="jdk-8u181-linux-x64.tar.gz"
-install_java()
-{
-    if [[ -f $HOME/$jdk_zip ]]; then
-        $script_dir/../java/install-java.sh -f $HOME/$jdk_zip
-    else
+    if [[ -z $mysql_connector_file ]]; then
+        echo "Please provide the mysql connector file"
+        exit 1
+    fi
+    if [[ -z $apim_product ]]; then
+        echo "Please provide the apim_product"
+        exit 1
+    fi
+    if [[ -z $os_user ]]; then
+        echo "Please provide the username of the general os user"
+        exit 1
+    fi
+    if [[ ! -f $HOME/$jdk ]]; then
         echo "please download oracle jdk to $HOME"
     fi
 }
-install_java
+export -f validate
 
+HOME=/home/$os_user
 
-mysql_con_jar="mysql-connector-java-8.0.12.jar"
-apim_product="wso2am"
+apim_extracted_file="wso2am"
 function setup()
 {
+    $script_dir/../java/install-java.sh -f $HOME/$jdk
+
     #Remove apim product unzipped product if it is already there
-    if [[ -d $HOME/$apim_product ]]; then
-     sudo -u ubuntu rm -r $HOME/$apim_product
+    if [[ -d $HOME/$apim_extracted_file ]]; then
+    #TODO: user should be an option
+     sudo -u $os_user rm -r $HOME/$apim_extracted_file
     fi
 
     #Extract the downloaded zip
     echo "Extracting WSO2 API Manager"
-    sudo -u ubuntu unzip -o $HOME/wso2am.zip -d $HOME
-    sudo -u ubuntu mv $HOME/wso2am-* $HOME/wso2am
+    sudo -u $os_user unzip -o $HOME/$apim_product -d $HOME
+    sudo -u $os_user mv $HOME/wso2am-* $HOME/wso2am
     echo "API Manager is extracted"
 
     # Configure WSO2 API Manager
-    sudo -u ubuntu $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/$mysql_con_jar
+    sudo -u $os_user $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $HOME/$mysql_connector_file
 
     # Start API Manager
-    sudo -u ubuntu $script_dir/apim-start.sh
+    sudo -u $os_user $script_dir/apim-start.sh
 
     # Create APIs in Local API Manager
-    sudo -u ubuntu $script_dir/create-apis.sh -a localhost -n $netty_host
+    sudo -u $os_user $script_dir/create-apis.sh -a localhost -n $netty_host
 
     # Generate tokens
     tokens_sql="$script_dir/target/tokens.sql"
     if [[ ! -f $tokens_sql ]]; then
-        sudo -u ubuntu $script_dir/generate-tokens.sh -t 4000
+        sudo -u $os_user $script_dir/generate-tokens.sh -t 4000
     fi
 
     if [[ -f $tokens_sql ]]; then
-        sudo -u ubuntu mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
+        sudo -u $os_user mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
     fi
 }
 export -f setup
 
-$script_dir/setup-common.sh "${opts[@]}" "$@"
+$script_dir/setup-common.sh "${opts[@]}" "$@" -p curl -p jq -p unzip -p mysql-client
 echo "Completed..."
