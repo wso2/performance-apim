@@ -1,11 +1,10 @@
-#!/bin/bash -e
+#!/bin/bash
 
 script_dir=$(dirname "$0")
 # Execute common script
 . $script_dir/perf-test-common.sh
 
-function initialize()
-{
+function initialize() {
     export apim_ssh_host=apim
     export apim_host=$(get_ssh_hostname $apim_ssh_host)
     scp $apim_ssh_host:setup/target/tokens.csv $HOME/tokens.csv
@@ -15,7 +14,7 @@ export -f initialize
 declare -A test_scenario0=(
     [name]="passthrough"
     [display_name]="Passthrough"
-    [description]="APIM simply forwards all requests to a back-end service without any processing"
+    [description]="Scenario to Test a secured API, which directly invokes the back-end service."
     [jmx]="apim-test.jmx"
     [protocol]="https"
     [path]="/echo/1.0.0"
@@ -25,7 +24,7 @@ declare -A test_scenario0=(
 declare -A test_scenario1=(
     [name]="mediation"
     [display_name]="Mediation"
-    [description]="APIM processes all the requests before forwarding it to a back-end service"
+    [description]="Scenario to Test a secured API, which has a “sequence” as a mediation extension to modify the message."
     [jmx]="apim-test.jmx"
     [protocol]="https"
     [path]="/mediation/1.0.0"
@@ -34,11 +33,11 @@ declare -A test_scenario1=(
 )
 
 function before_execute_test_scenario() {
-
     local service_path=${scenario[path]}
     local protocol=${scenario[protocol]}
     jmeter_params+=("host=$apim_host" "port=8243" "path=$service_path")
-    jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol" tokens="$HOME/tokens.csv")
+    jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
+        tokens="$HOME/tokens.csv")
     echo "Starting APIM service"
     ssh $apim_ssh_host "./setup/apim-start.sh $heap "
 }
