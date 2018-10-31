@@ -1,5 +1,5 @@
 #!/bin/bash -x
-# Copyright 2017 WSO2 Inc. (http://wso2.org)
+# Copyright 2018 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,28 @@
 # Start WSO2 API Manager
 # ----------------------------------------------------------------------------
 
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 [-h]"
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "h" opt; do
+    case "${opt}" in
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
 heap_size=$1
 if [[ -z $heap_size ]]; then
     heap_size="4"
@@ -28,19 +50,17 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
-
 carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 
-if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
+if pgrep -f "$carbon_bootstrap_class" >/dev/null; then
     echo "Shutting down APIM"
-    $HOME/wso2am/bin/wso2server.sh stop
+    wso2am/bin/wso2server.sh stop
 fi
 
 echo "Waiting for API Manager to stop"
 
-while true
-do
-    if ! pgrep -f "$carbon_bootstrap_class" > /dev/null; then
+while true; do
+    if ! pgrep -f "$carbon_bootstrap_class" >/dev/null; then
         echo "API Manager stopped"
         break
     else
@@ -48,25 +68,24 @@ do
     fi
 done
 
-log_files=($HOME/wso2am/repository/logs/*)
+log_files=(wso2am/repository/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp"
-    mv $HOME/wso2am/repository/logs/* /tmp/;
+    mv wso2am/repository/logs/* /tmp/
 fi
 
 echo "Setting Heap to ${heap_size}GB"
 export JVM_MEM_OPTS="-Xms${heap_size}G -Xmx${heap_size}G"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am/repository/logs/gc.log"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:wso2am/repository/logs/gc.log"
 
 echo "Starting APIM"
-$HOME/wso2am/bin/wso2server.sh start
+wso2am/bin/wso2server.sh start
 
 echo "Waiting for API Manager to start"
 
-while true 
-do
+while true; do
     # Check Version service
     response_code="$(curl -sk -w "%{http_code}" -o /dev/null https://localhost:8243/services/Version)"
     if [ $response_code -eq 200 ]; then
