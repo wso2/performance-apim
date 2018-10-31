@@ -1,5 +1,5 @@
-#!/bin/bash -x
-# Copyright 2017 WSO2 Inc. (http://wso2.org)
+#!/bin/bash
+# Copyright 2018 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,13 +21,32 @@ script_dir=$(dirname "$0")
 apim_host=""
 netty_host=""
 
-while getopts "n:m:u:p:c:a:w:gp" opt; do
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 -a <apim_host> -n <netty_host> [-h]"
+    echo ""
+    echo "-a: Hostname of APIM"
+    echo "-n: Hostname of Netty Service"
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "a:n:h" opt; do
     case "${opt}" in
+    a)
+        apim_host=${OPTARG}
+        ;;
     n)
         netty_host=${OPTARG}
         ;;
-    a)
-        apim_host=${OPTARG}
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
         ;;
     *)
         opts+=("-${opt}")
@@ -37,18 +56,14 @@ while getopts "n:m:u:p:c:a:w:gp" opt; do
 done
 shift "$((OPTIND - 1))"
 
-validate()
-{
-    if [[ -z $netty_host ]]; then
-        echo "Please provide the hostname of Netty Service."
-        exit 1
-    fi
-    if [[ -z $apim_host ]]; then
-        echo "Please provide the Hostname of Api Manager"
-        exit 1
-    fi
-}
-validate
+if [[ -z $apim_host ]]; then
+    echo "Please provide the Hostname of Api Manager"
+    exit 1
+fi
+if [[ -z $netty_host ]]; then
+    echo "Please provide the hostname of Netty Service."
+    exit 1
+fi
 
 base_https_url="https://${apim_host}:9443"
 nio_https_url="https://${apim_host}:8243"
@@ -65,12 +80,12 @@ confirm() {
     # call with a prompt string or use a default
     read -r -p "${1:-Are you sure?} [y/N] " response
     case $response in
-        [yY][eE][sS]|[yY]) 
-            true
-            ;;
-        *)
-            false
-            ;;
+    [yY][eE][sS] | [yY])
+        true
+        ;;
+    *)
+        false
+        ;;
     esac
 }
 
@@ -143,7 +158,7 @@ fi
 
 #Write consumer key to file
 mkdir -p "$script_dir/target"
-echo $consumer_key > "$script_dir/target/consumer_key"
+echo $consumer_key >"$script_dir/target/consumer_key"
 
 echo -ne "\n"
 
@@ -217,7 +232,6 @@ mediation_policy_request() {
 EOF
 }
 
-
 subscription_request() {
     cat <<EOF
 {
@@ -235,7 +249,7 @@ create_api() {
     echo "Creating $api_name API..."
     # Check whether API exists
     local existing_api_id=$($curl_command -H "Authorization: Bearer $view_access_token" ${base_https_url}/api/am/publisher/v0.14/apis?query=name:$api_name\$ | jq -r '.list[0] | .id')
-    if [ ! -z  $existing_api_id ] && [ ! $existing_api_id = "null" ]; then
+    if [ ! -z $existing_api_id ] && [ ! $existing_api_id = "null" ]; then
         echo "$api_name API already exists with ID $existing_api_id"
         echo -ne "\n"
         if (confirm "Delete $api_name API?"); then
@@ -292,9 +306,9 @@ create_api() {
     fi
     sleep 30
     echo "Waiting for publishing tasks to complete"
-    if [ ! -z "$out_sequence" ] ; then
+    if [ ! -z "$out_sequence" ]; then
         echo "Adding mediation policy to $api_name API"
-        local sequence_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -d "$(mediation_policy_request "$out_sequence")" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}/policies/mediation"  | jq -r '.id')
+        local sequence_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -d "$(mediation_policy_request "$out_sequence")" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}/policies/mediation" | jq -r '.id')
         if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
             echo "Mediation policy added to $api_name API with ID $sequence_id"
             echo -ne "\n"
@@ -321,7 +335,7 @@ create_api() {
         sleep 30
     fi
     echo "Subscribing $api_name API to DefaultApplication"
-    local subscription_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token"  -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/store/v0.14/subscriptions" | jq -r '.subscriptionId')
+    local subscription_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/store/v0.14/subscriptions" | jq -r '.subscriptionId')
     if [ ! -z $subscription_id ] && [ ! $subscription_id = "null" ]; then
         echo "Successfully subscribed $api_name API to DefaultApplication. Subscription ID is $subscription_id"
         echo -ne "\n"
