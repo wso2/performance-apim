@@ -61,8 +61,7 @@ function before_execute_test_scenario() {
     ssh $apim_ssh_host "./setup/apim-start.sh $heap "
 }
 
-function after_execute_test_scenario() {
-
+function after_execute_test_scenario(){
     write_server_metrics apim $apim_ssh_host carbon
     download_file $apim_ssh_host wso2am/repository/logs/wso2carbon.log wso2carbon.log
     download_file $apim_ssh_host wso2am/repository/logs/gc.log apim_gc.log
