@@ -1,14 +1,14 @@
 drop database if exists apim;
 create database apim;
 use apim;
-source ~/wso2am/dbscripts/apimgt/mysql5.7.sql
+source /tmp/apimgt-mysql5.7.sql
 
 drop database if exists registry;
 create database registry;
 use registry;
-source ~/wso2am/dbscripts/mysql5.7.sql
+source /tmp/mysql5.7.sql
 
 drop database if exists userstore;
 create database userstore;
 use userstore;
-source ~/wso2am/dbscripts/mysql5.7.sql
+source /tmp/mysql5.7.sql
