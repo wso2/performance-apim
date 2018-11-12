@@ -18,16 +18,39 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-tokens_count=$1
+tokens_count=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 tokens_count"
-        exit 1
-    fi
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 -t <tokens_count>"
+    echo ""
+    echo "-t: Count of the Tokens."
+    echo "-h: Display this help and exit."
+    echo ""
 }
 
-validate $tokens_count
+while getopts "t:h" opt; do
+    case "${opt}" in
+    t)
+        tokens_count=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+if [[ -z $tokens_count ]]; then
+    echo "Please provide the Token count"
+    exit 1
+fi
 
 consumer_key_file="$script_dir/target/consumer_key"
 
@@ -66,10 +89,10 @@ do
     REFRESH_TOKEN_KEY="$(get_random_string 36)"
     TOKEN_SCOPE_HASH="$(get_random_string 32)"
     ACCESS_TOKEN_HASH=$(echo -n $ACCESS_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
-    REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)      
+    REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
     ACCESS_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
     REFRESH_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
-    
+
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "INSERT INTO IDN_OAUTH2_ACCESS_TOKEN (TOKEN_ID, ACCESS_TOKEN, REFRESH_TOKEN, CONSUMER_KEY_ID, AUTHZ_USER, \
         TENANT_ID, USER_DOMAIN, TIME_CREATED, REFRESH_TOKEN_TIME_CREATED, VALIDITY_PERIOD, \

@@ -49,6 +49,23 @@
         <module>distribution</module>
     </modules>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.wso2.performance.common</groupId>
+                <artifactId>performance-common-distribution</artifactId>
+                <version>${performance.common.version}</version>
+                <type>tar.gz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.wos2.performance.apim</groupId>
+                <artifactId>performance-apim-distribution</artifactId>
+                <version>${performance.apim.version}</version>
+                <type>tar.gz</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <profiles>
         <profile>
             <id>pedantic</id>
@@ -80,6 +97,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <performance.apim.version>0.1.0-SNAPSHOT</performance.apim.version>
+        <performance.apim.version>0.1.1-SNAPSHOT</performance.apim.version>
+        <performance.common.version>0.1.1-SNAPSHOT</performance.common.version>
     </properties>
 </project>
