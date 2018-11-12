@@ -21,6 +21,19 @@
         <format>tar.gz</format>
     </formats>
 
+    <dependencySets>
+        <dependencySet>
+            <includes>
+                <include>org.wso2.performance.common:performance-common-distribution:tar.gz</include>
+            </includes>
+            <useStrictFiltering>true</useStrictFiltering>
+            <useProjectArtifact>false</useProjectArtifact>
+            <unpack>true</unpack>
+            <outputDirectory>.</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+
+
     <fileSets>
         <fileSet>
             <directory>scripts</directory>
