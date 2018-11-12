@@ -142,18 +142,18 @@ function setup() {
     echo "API Manager is extracted"
 
     # Configure WSO2 API Manager
-    sudo -u $os_user $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $mysql_connector_file
+    sudo -u $os_user $script_dir/../apim/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $mysql_connector_file
 
     # Start API Manager
-    sudo -u $os_user $script_dir/apim-start.sh
+    sudo -u $os_user $script_dir/../apim/apim-start.sh
 
     # Create APIs in Local API Manager
-    sudo -u $os_user $script_dir/create-apis.sh -a localhost -n $netty_host
+    sudo -u $os_user $script_dir/../apim/create-apis.sh -a localhost -n $netty_host
 
     # Generate tokens
     tokens_sql="$script_dir/target/tokens.sql"
     if [[ ! -f $tokens_sql ]]; then
-        sudo -u $os_user $script_dir/generate-tokens.sh -t 4000
+        sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
     fi
 
     if [[ -f $tokens_sql ]]; then
