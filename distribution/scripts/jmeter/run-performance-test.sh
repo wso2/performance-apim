@@ -26,7 +26,7 @@ script_dir=$(dirname "$0")
 function initialize() {
     export apim_ssh_host=apim
     export apim_host=$(get_ssh_hostname $apim_ssh_host)
-    scp $apim_ssh_host:setup/target/tokens.csv $HOME/tokens.csv
+    scp $apim_ssh_host:apim/target/tokens.csv $HOME/tokens.csv
 }
 export -f initialize
 
@@ -58,7 +58,7 @@ function before_execute_test_scenario() {
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
         tokens="$HOME/tokens.csv")
     echo "Starting APIM service"
-    ssh $apim_ssh_host "./setup/apim-start.sh $heap "
+    ssh $apim_ssh_host "./apim/apim-start.sh $heap "
 }
 
 function after_execute_test_scenario() {
