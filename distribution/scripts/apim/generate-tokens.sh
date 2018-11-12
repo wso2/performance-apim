@@ -82,16 +82,15 @@ fi
 
 echo "Genearating Tokens.........."
 
-for (( c=1; c <= $tokens_count; c++ ))
-do
+for ((c = 1; c <= $tokens_count; c++)); do
     TOKEN_ID="$(get_random_string 36)"
     ACCESS_TOKEN_KEY="$(get_random_string 36)"
     REFRESH_TOKEN_KEY="$(get_random_string 36)"
     TOKEN_SCOPE_HASH="$(get_random_string 32)"
     ACCESS_TOKEN_HASH=$(echo -n $ACCESS_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
     REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
-    ACCESS_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
-    REFRESH_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}";
+    ACCESS_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}"
+    REFRESH_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}"
 
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "INSERT INTO IDN_OAUTH2_ACCESS_TOKEN (TOKEN_ID, ACCESS_TOKEN, REFRESH_TOKEN, CONSUMER_KEY_ID, AUTHZ_USER, \
@@ -102,12 +101,12 @@ do
         '$NOW','$NOW',99999999000,99999999000,'$TOKEN_SCOPE_HASH', \
         'ACTIVE','APPLICATION_USER','password','admin@carbon.super','$ACCESS_TOKEN_HASH_JSON', \
         '$REFRESH_TOKEN_HASH_JSON' \
-        FROM IDN_OAUTH_CONSUMER_APPS WHERE CONSUMER_KEY='$consumer_key';" >> $sql_file
+        FROM IDN_OAUTH_CONSUMER_APPS WHERE CONSUMER_KEY='$consumer_key';" >>$sql_file
     echo INSERT INTO "IDN_OAUTH2_ACCESS_TOKEN_SCOPE (TOKEN_ID, TOKEN_SCOPE, TENANT_ID) \
-        VALUES ('$TOKEN_ID','default',-1234);" >> $sql_file
-    echo $ACCESS_TOKEN_KEY >> $tokens_file
+        VALUES ('$TOKEN_ID','default',-1234);" >>$sql_file
+    echo $ACCESS_TOKEN_KEY >>$tokens_file
     echo -ne "Generated Tokens Count: ${c}\r"
 done
-echo "COMMIT;" >> $sql_file
+echo "COMMIT;" >>$sql_file
 
 echo "Token Generation Completed.........."
