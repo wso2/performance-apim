@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2017 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,74 +19,150 @@
 
 # This script will run all other scripts to configure and setup WSO2 API Manager
 
-script_dir=$(dirname "$0")
-netty_host=$1
-mysql_host=$2
-mysql_user=$3
-mysql_password=$4
-mysql_connector_jar="$5"
-
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 netty_host mysql_host mysql_user mysql_password mysql_connector_jar"
-        exit 1
-    fi
-}
-
-validate_command() {
-    # Check whether given command exists
-    # $1 is the command name
-    # $2 is the package containing command
-    if ! command -v $1 >/dev/null 2>&1; then
-        echo "Please install $2 (sudo apt -y install $2)"
-        exit 1
-    fi
-}
-
-validate $netty_host
-validate $mysql_host
-validate $mysql_user
-validate $mysql_password
-validate $mysql_connector_jar
-
-#Validate commands
-validate_command curl curl
-validate_command mysql mysql-client
-validate_command jq jq
-
-apim_path="$HOME/wso2am-2.1.0"
-
-# Extract API Manager
-if [[ ! -f $apim_path.zip ]]; then
-    echo "Please download WSO2 API Manager to $HOME"
-    exit 1
+# Make sure the script is running as root.
+if [ "$UID" -ne "0" ]; then
+    echo "You must be root to run $0. Try following"
+    echo "sudo $0"
+    exit 9
 fi
-if [[ ! -d $apim_path ]]; then
+
+export script_name="$0"
+export script_dir=$(dirname "$0")
+export netty_host=""
+export mysql_host=""
+export mysql_user=""
+export mysql_password=""
+export mysql_connector_file=""
+export apim_product=""
+export jdk=""
+export os_user=""
+
+function usageCommand() {
+    echo "-j <oracle_jdk> -a <apim_product> -c <mysql_connector_file> -n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -o <os_user>"
+}
+export -f usageCommand
+
+function usageHelp() {
+    echo "-j: Oracle Jdk file"
+    echo "-a: Apim Product zip"
+    echo "-c: Mysql Connector File"
+    echo "-n: The hostname of Netty Service."
+    echo "-m: The hostname of Mysql service"
+    echo "-u: Mysql username"
+    echo "-p: Mysql password"
+    echo "-o: General user of the OS"
+}
+export -f usageHelp
+
+while getopts "gp:w:o:hj:a:c:n:m:u:p:o:" opt; do
+    case "${opt}" in
+    j)
+        jdk=${OPTARG}
+        ;;
+    a)
+        apim_product=${OPTARG}
+        ;;
+    c)
+        mysql_connector_file=${OPTARG}
+        ;;
+    n)
+        netty_host=${OPTARG}
+        ;;
+    m)
+        mysql_host=${OPTARG}
+        ;;
+    u)
+        mysql_user=${OPTARG}
+        ;;
+    p)
+        mysql_password=${OPTARG}
+        ;;
+    o)
+        os_user=${OPTARG}
+        ;;
+    *)
+        opts+=("-${opt}")
+        [[ -n "$OPTARG" ]] && opts+=("$OPTARG")
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+function validate() {
+    if [[ ! -f /home/$os_user/$jdk ]]; then
+        echo "please download oracle jdk to /home/$os_user"
+    fi
+    if [[ -z $apim_product ]]; then
+        echo "Please provide the apim_product"
+        exit 1
+    fi
+    if [[ -z $mysql_connector_file ]]; then
+        echo "Please provide the mysql connector file"
+        exit 1
+    fi
+    if [[ -z $netty_host ]]; then
+        echo "Please provide the hostname of Netty Service."
+        exit 1
+    fi
+    if [[ -z $mysql_host ]]; then
+        echo "Please provide the hostname of mysql host"
+        exit 1
+    fi
+    if [[ -z $mysql_user ]]; then
+        echo "Please provide the mysql username"
+        exit 1
+    fi
+    if [[ -z $mysql_password ]]; then
+        echo "Please provide the mysql password"
+        exit 1
+    fi
+    if [[ -z $os_user ]]; then
+        echo "Please provide the username of the general os user"
+        exit 1
+    fi
+
+}
+export -f validate
+
+function setup() {
+    install_dir=/home/$os_user
+    $script_dir/../java/install-java.sh -f $install_dir/$jdk
+
+    pushd ${install_dir}
+
+    #Remove apim product unzipped product if it is already there
+    if [[ -d wso2am ]]; then
+        sudo -u $os_user rm -r wso2am
+    fi
+
+    #Extract the downloaded zip
     echo "Extracting WSO2 API Manager"
-    unzip -q $apim_path.zip -d $HOME
+    sudo -u $os_user unzip -o $apim_product
+    sudo -u $os_user mv wso2am-* wso2am
     echo "API Manager is extracted"
-else
-    echo "API Manager is already extracted"
-    exit 1
-fi
 
-# Configure WSO2 API Manager
-$script_dir/configure.sh $mysql_host $mysql_user $mysql_password $mysql_connector_jar
+    # Configure WSO2 API Manager
+    sudo -u $os_user $script_dir/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $mysql_connector_file
 
-# Start API Manager
-$script_dir/apim-start.sh
+    # Start API Manager
+    sudo -u $os_user $script_dir/apim-start.sh
 
-# Create APIs in Local API Manager
-$script_dir/create-apis.sh localhost $netty_host
+    # Create APIs in Local API Manager
+    sudo -u $os_user $script_dir/create-apis.sh -a localhost -n $netty_host
 
-# Generate tokens
-tokens_sql="$script_dir/target/tokens.sql"
-if [[ ! -f $tokens_sql ]]; then
-    $script_dir/generate-tokens.sh 4000
-fi
+    # Generate tokens
+    tokens_sql="$script_dir/target/tokens.sql"
+    if [[ ! -f $tokens_sql ]]; then
+        sudo -u $os_user $script_dir/generate-tokens.sh -t 4000
+    fi
 
-if [[ -f $tokens_sql ]]; then
-    mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $tokens_sql
-fi
+    if [[ -f $tokens_sql ]]; then
+        sudo -u $os_user mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+    fi
 
+    popd
+}
+export -f setup
+
+$script_dir/setup-common.sh "${opts[@]}" "$@" -p curl -p jq -p unzip -p mysql-client
 echo "Completed..."
