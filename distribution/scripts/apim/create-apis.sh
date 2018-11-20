@@ -26,7 +26,7 @@ function usage() {
     echo "Usage: "
     echo "$0 -a <apim_host> -n <netty_host> [-h]"
     echo ""
-    echo "-a: Hostname of APIM"
+    echo "-a: Hostname of WSO2 API Manager"
     echo "-n: Hostname of Netty Service"
     echo "-h: Display this help and exit."
     echo ""
@@ -157,8 +157,9 @@ else
 fi
 
 #Write consumer key to file
-mkdir -p "$script_dir/target"
-echo $consumer_key >"$script_dir/target/consumer_key"
+sudo mkdir -p "$script_dir/target"
+sudo chown -R ubuntu "$script_dir/target"
+sudo echo $consumer_key >"$script_dir/target/consumer_key"
 
 echo -ne "\n"
 
