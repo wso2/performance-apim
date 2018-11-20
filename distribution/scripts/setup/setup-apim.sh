@@ -43,14 +43,14 @@ function usageCommand() {
 export -f usageCommand
 
 function usageHelp() {
-    echo "-j: Oracle Jdk file"
-    echo "-a: Apim Product zip"
-    echo "-c: Mysql Connector File"
-    echo "-n: The hostname of Netty Service."
-    echo "-m: The hostname of Mysql service"
-    echo "-u: Mysql username"
-    echo "-p: Mysql password"
-    echo "-o: General user of the OS"
+    echo "-j: Oracle JDK file"
+    echo "-a: WSO2 API Manager Product zip"
+    echo "-c: MySQL Connector File"
+    echo "-n: The hostname of Netty service."
+    echo "-m: The hostname of MySQL service."
+    echo "-u: MySQL Username."
+    echo "-p: MySQL Password."
+    echo "-o: General user of the OS."
 }
 export -f usageHelp
 
@@ -89,14 +89,15 @@ done
 shift "$((OPTIND - 1))"
 
 function validate() {
-    if [[ ! -f /home/$os_user/$jdk ]]; then
+    if [[ ! -f $jdk ]]; then
         echo "please download oracle jdk to /home/$os_user"
+        exit 1
     fi
     if [[ -z $apim_product ]]; then
         echo "Please provide the apim_product"
         exit 1
     fi
-    if [[ -z $mysql_connector_file ]]; then
+    if [[ ! -f $mysql_connector_file ]]; then
         echo "Please provide the mysql connector file"
         exit 1
     fi
@@ -126,18 +127,18 @@ export -f validate
 
 function setup() {
     install_dir=/home/$os_user
-    $script_dir/../java/install-java.sh -f $install_dir/$jdk
+    $script_dir/../java/install-java.sh -f $jdk
 
     pushd ${install_dir}
 
-    #Remove apim product unzipped product if it is already there
+    #Remove API Manager if it is already there
     if [[ -d wso2am ]]; then
         sudo -u $os_user rm -r wso2am
     fi
 
     #Extract the downloaded zip
     echo "Extracting WSO2 API Manager"
-    sudo -u $os_user unzip -o $apim_product
+    sudo -u $os_user unzip -q -o $apim_product
     sudo -u $os_user mv wso2am-* wso2am
     echo "API Manager is extracted"
 
@@ -145,7 +146,8 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $mysql_connector_file
 
     # Start API Manager
-    sudo -u $os_user $script_dir/../apim/apim-start.sh
+    apim_heap_size=2G
+    sudo -u $os_user $script_dir/../apim/apim-start.sh -m $apim_heap_size
 
     # Create APIs in Local API Manager
     sudo -u $os_user $script_dir/../apim/create-apis.sh -a localhost -n $netty_host
