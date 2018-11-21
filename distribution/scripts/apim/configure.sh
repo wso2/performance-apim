@@ -29,9 +29,9 @@ function usage() {
     echo "$0 -m <mysql_host> -u <mysql_user> -p <mysql_password> -c <mysql_connector_file> [-h]"
     echo ""
     echo "-m: Hostname of Mysql Service"
-    echo "-u: User of Mysql"
-    echo "-p: Password of Mysql"
-    echo "-c: Jar file of the Mysql Connector"
+    echo "-u: MySQL Username."
+    echo "-p: MySQL Password."
+    echo "-c: JAR file of the MySQL Connector"
     echo "-i: Installed Directory of APIM"
     echo "-h: Display this help and exit."
     echo ""
@@ -64,19 +64,19 @@ done
 shift "$((OPTIND - 1))"
 
 if [[ -z $mysql_host ]]; then
-    echo "Please provide the hostname of mysql host"
+    echo "Please provide the hostname of MySQL host."
     exit 1
 fi
 if [[ -z $mysql_user ]]; then
-    echo "Please provide the mysql username"
+    echo "Please provide the MySQL username."
     exit 1
 fi
 if [[ -z $mysql_password ]]; then
-    echo "Please provide the mysql password"
+    echo "Please provide the MySQL password."
     exit 1
 fi
-if [[ -z $mysql_connector_file ]]; then
-    echo "Please provide the mysql connector"
+if [[ ! -f $mysql_connector_file ]]; then
+    echo "Please provide the MySQL connector file."
     exit 1
 fi
 

@@ -17,16 +17,23 @@
 # Start WSO2 API Manager
 # ----------------------------------------------------------------------------
 
+default_heap_size="2G"
+heap_size="$default_heap_size"
+
 function usage() {
     echo ""
     echo "Usage: "
     echo "$0 [-h]"
+    echo "-m: The heap memory size of API Manager. Default: $default_heap_size."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "h" opt; do
+while getopts "m:h" opt; do
     case "${opt}" in
+    m)
+        heap_size=${OPTARG}
+        ;;
     h)
         usage
         exit 0
@@ -39,9 +46,9 @@ while getopts "h" opt; do
 done
 shift "$((OPTIND - 1))"
 
-heap_size=$1
 if [[ -z $heap_size ]]; then
-    heap_size="4"
+    echo "Please provide the heap size for the API Manager."
+    exit 1
 fi
 
 jvm_dir=""
@@ -74,27 +81,33 @@ if [ ${#log_files[@]} -gt 1 ]; then
     mv wso2am/repository/logs/* /tmp/
 fi
 
-echo "Setting Heap to ${heap_size}GB"
-export JVM_MEM_OPTS="-Xms${heap_size}G -Xmx${heap_size}G"
+echo "Setting Heap to ${heap_size}"
+export JVM_MEM_OPTS="-Xms${heap_size} -Xmx${heap_size}"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:wso2am/repository/logs/gc.log"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/wso2am/repository/logs/gc.log"
 
 echo "Starting APIM"
 wso2am/bin/wso2server.sh start
 
 echo "Waiting for API Manager to start"
 
-while true; do
-    # Check Version service
+exit_status=100
+
+n=0
+until [ $n -ge 60 ]; do
     response_code="$(curl -sk -w "%{http_code}" -o /dev/null https://localhost:8243/services/Version)"
     if [ $response_code -eq 200 ]; then
         echo "API Manager started"
+        exit_status=0
         break
     else
         sleep 10
     fi
+    n=$(($n + 1))
+    sleep 1
 done
 
 # Wait for another 10 seconds to make sure that the server is ready to accept API requests.
 sleep 10
+
