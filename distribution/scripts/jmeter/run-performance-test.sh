@@ -26,14 +26,21 @@ script_dir=$(dirname "$0")
 function initialize() {
     export apim_ssh_host=apim
     export apim_host=$(get_ssh_hostname $apim_ssh_host)
-    scp $apim_ssh_host:apim/target/tokens.csv $HOME/tokens.csv
+    echo "Downloading tokens to $HOME."
+    scp $apim_ssh_host:apim/target/tokens.csv $HOME/
+    if [[ $jmeter_servers -gt 1 ]]; then
+        for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
+            echo "Copying tokens to $jmeter_ssh_host"
+            scp $HOME/tokens.csv $jmeter_ssh_host:
+        done
+    fi
 }
 export -f initialize
 
 declare -A test_scenario0=(
     [name]="passthrough"
     [display_name]="Passthrough"
-    [description]="Scenario to Test a secured API, which directly invokes the back-end service."
+    [description]="A secured API, which directly invokes the back-end service."
     [jmx]="apim-test.jmx"
     [protocol]="https"
     [path]="/echo/1.0.0"
@@ -43,7 +50,7 @@ declare -A test_scenario0=(
 declare -A test_scenario1=(
     [name]="mediation"
     [display_name]="Mediation"
-    [description]="Scenario to Test a secured API, which has a “sequence” as a mediation extension to modify the message."
+    [description]="A secured API, which has a mediation extension to modify the message."
     [jmx]="apim-test.jmx"
     [protocol]="https"
     [path]="/mediation/1.0.0"
@@ -58,12 +65,11 @@ function before_execute_test_scenario() {
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
         tokens="$HOME/tokens.csv")
     echo "Starting APIM service"
-    ssh $apim_ssh_host "./apim/apim-start.sh $heap "
+    ssh $apim_ssh_host "./apim/apim-start.sh -m $heap"
 }
 
 function after_execute_test_scenario() {
-
-    write_server_metrics apim $apim_ssh_host carbon
+    write_server_metrics apim $apim_ssh_host org.wso2.carbon.bootstrap.Bootstrap
     download_file $apim_ssh_host wso2am/repository/logs/wso2carbon.log wso2carbon.log
     download_file $apim_ssh_host wso2am/repository/logs/gc.log apim_gc.log
 }

@@ -74,7 +74,7 @@ function usage() {
     echo "-a: APIM Product Distribution (.zip)"
     echo "-j: Apache JMeter (tgz) distribution."
     echo "-o: Oracle JDK distribution."
-    echo "-c: Mysql Connector distribution."
+    echo "-c: MySQL Connector JAR file."
     echo "-m: RDS Instance Master Username."
     echo "-p: RDS Instance Master User Password."
     echo "-u: General OS User."
@@ -179,6 +179,16 @@ if [[ ${apim_performance_distribution_filename: -7} != ".tar.gz" ]]; then
     exit 1
 fi
 
+if [[ ! -f $key_file ]]; then
+    echo "Please provide the key file."
+    exit 1
+fi
+
+if [[ ${key_file: -4} != ".pem" ]]; then
+    echo "AWS EC2 Key file must have .pem extension"
+    exit 1
+fi
+
 if [[ ! -f $apim_product_distribution ]]; then
     echo "Please provide APIM Product zip"
     exit 1
@@ -192,7 +202,7 @@ if [[ ${apim_product_distribution_filename: -4} != ".zip" ]]; then
 fi
 
 if [[ ! -f $mysql_connector_distribution ]]; then
-    echo "Please Specify the Mysql Connector File"
+    echo "Please provide the MySQL Connector JAR file."
     exit 1
 fi
 

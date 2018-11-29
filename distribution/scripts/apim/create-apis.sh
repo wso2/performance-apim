@@ -72,7 +72,7 @@ curl_command="curl -sk"
 
 #Check whether jq command exsits
 if ! command -v jq >/dev/null 2>&1; then
-    echo "Please install jq (sudo apt -y install jq)"
+    echo "Please install jq."
     exit 1
 fi
 

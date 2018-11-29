@@ -23,7 +23,7 @@ heap_size="$default_heap_size"
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 [-h]"
+    echo "$0 [-m <heap_size>] [-h]"
     echo "-m: The heap memory size of API Manager. Default: $default_heap_size."
     echo "-h: Display this help and exit."
     echo ""
@@ -62,23 +62,22 @@ carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 if pgrep -f "$carbon_bootstrap_class" >/dev/null; then
     echo "Shutting down APIM"
     wso2am/bin/wso2server.sh stop
+
+    echo "Waiting for API Manager to stop"
+    while true; do
+        if ! pgrep -f "$carbon_bootstrap_class" >/dev/null; then
+            echo "API Manager stopped"
+            break
+        else
+            sleep 10
+        fi
+    done
 fi
-
-echo "Waiting for API Manager to stop"
-
-while true; do
-    if ! pgrep -f "$carbon_bootstrap_class" >/dev/null; then
-        echo "API Manager stopped"
-        break
-    else
-        sleep 10
-    fi
-done
 
 log_files=(wso2am/repository/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp"
-    mv wso2am/repository/logs/* /tmp/
+    mv "${log_files[@]}" /tmp/
 fi
 
 echo "Setting Heap to ${heap_size}"
@@ -110,4 +109,4 @@ done
 
 # Wait for another 10 seconds to make sure that the server is ready to accept API requests.
 sleep 10
-
+exit $exit_status

@@ -28,7 +28,7 @@ function usage() {
     echo "Usage: "
     echo "$0 -m <mysql_host> -u <mysql_user> -p <mysql_password> -c <mysql_connector_file> [-h]"
     echo ""
-    echo "-m: Hostname of Mysql Service"
+    echo "-m: Hostname of MySQL Server."
     echo "-u: MySQL Username."
     echo "-p: MySQL Password."
     echo "-c: JAR file of the MySQL Connector"
@@ -82,8 +82,6 @@ fi
 
 validate_command() {
     # Check whether given command exists
-    # $1 is the command name
-    # $2 is the package containing command
     if ! command -v $1 >/dev/null 2>&1; then
         echo "Please Install $2"
         exit 1
