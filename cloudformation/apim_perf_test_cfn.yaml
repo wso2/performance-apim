@@ -209,6 +209,9 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       CidrBlock: 10.0.0.0/24
       Tags:
         - Key: Name
@@ -257,7 +260,9 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: 'us-east-1a'
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
       CidrBlock: 10.0.1.0/24
       Tags:
         - Key: Name
@@ -269,7 +274,9 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: 'us-east-1c'
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref 'AWS::Region'
       CidrBlock: 10.0.2.0/24
       Tags:
       - Key: Name
@@ -1180,6 +1187,7 @@ Resources:
     CreationPolicy:
       ResourceSignal:
         Timeout: PT30M
+    DeletionPolicy: Delete
 Outputs:
   JMeterClientPublicIP:
     Description: JMeter Client Public IP
