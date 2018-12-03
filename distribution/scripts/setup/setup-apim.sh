@@ -152,13 +152,16 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/create-apis.sh -a localhost -n $netty_host
 
     # Generate tokens
-    tokens_sql="$script_dir/target/tokens.sql"
+    tokens_sql="$script_dir/../apim/target/tokens.sql"
     if [[ ! -f $tokens_sql ]]; then
         sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
     fi
 
     if [[ -f $tokens_sql ]]; then
-        sudo -u $os_user mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+        mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+    else
+        echo "SQL file with generated tokens not found."
+        exit 1
     fi
 
     popd
