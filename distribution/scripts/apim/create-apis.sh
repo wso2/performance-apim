@@ -305,8 +305,8 @@ create_api() {
         echo -ne "\n"
         return
     fi
-    sleep 30
     echo "Waiting for publishing tasks to complete"
+    sleep 60
     if [ ! -z "$out_sequence" ]; then
         echo "Adding mediation policy to $api_name API"
         local sequence_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -d "$(mediation_policy_request "$out_sequence")" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}/policies/mediation" | jq -r '.id')
@@ -318,7 +318,7 @@ create_api() {
             echo -ne "\n"
             return
         fi
-        sleep 30
+        sleep 60
         #Get API
         local api_details=$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}")
         #Update API with sequence
