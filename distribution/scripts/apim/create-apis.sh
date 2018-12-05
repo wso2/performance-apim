@@ -157,9 +157,8 @@ else
 fi
 
 #Write consumer key to file
-sudo mkdir -p "$script_dir/target"
-sudo chown -R ubuntu "$script_dir/target"
-sudo echo $consumer_key >"$script_dir/target/consumer_key"
+mkdir -p "$script_dir/target"
+echo $consumer_key >"$script_dir/target/consumer_key"
 
 echo -ne "\n"
 
