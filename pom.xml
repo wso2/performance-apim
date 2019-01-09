@@ -48,7 +48,6 @@
 
     <modules>
         <module>distribution</module>
-        <module>cloudformation</module>
     </modules>
 
     <dependencyManagement>
@@ -136,8 +135,10 @@
                         <version>${apache.rat.plugin.version}</version>
                         <configuration>
                             <excludes>
-                                <exclude>README.md</exclude>
-                                <exclude>dependency-reduced-pom.xml</exclude>
+                                <exclude>**/*.md</exclude>
+                                <exclude>**/*.jmx</exclude>
+                                <exclude>**/*.bal</exclude>
+                                <exclude>**/dependency-reduced-pom.xml</exclude>
                             </excludes>
                         </configuration>
                         <executions>
