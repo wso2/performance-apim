@@ -58,12 +58,6 @@
                 <version>${performance.common.version}</version>
                 <type>tar.gz</type>
             </dependency>
-            <dependency>
-                <groupId>org.wos2.performance.apim</groupId>
-                <artifactId>performance-apim-distribution</artifactId>
-                <version>${performance.apim.version}</version>
-                <type>tar.gz</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -137,7 +131,6 @@
                             <excludes>
                                 <exclude>**/*.md</exclude>
                                 <exclude>**/*.jmx</exclude>
-                                <exclude>**/*.bal</exclude>
                                 <exclude>**/dependency-reduced-pom.xml</exclude>
                             </excludes>
                         </configuration>
