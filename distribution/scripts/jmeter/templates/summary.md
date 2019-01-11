@@ -38,7 +38,7 @@ The following are the test parameters.
 The duration of each test is **{{ parameters.test_duration }} seconds**. The warm-up period is **{{ parameters.warmup_time }} seconds**.
 The measurement results are collected after the warm-up period.
 
-A [**{{ parameters.apim_ec2_instance_type }}** Amazon EC2 instance](https://aws.amazon.com/ec2/instance-types/) was used to install WSO2 API Manager.
+A [**{{ parameters.wso2am_ec2_instance_type }}** Amazon EC2 instance](https://aws.amazon.com/ec2/instance-types/) was used to install WSO2 API Manager.
 
 The following are the measurements collected from each performance test conducted for a given combination of
 test parameters.
