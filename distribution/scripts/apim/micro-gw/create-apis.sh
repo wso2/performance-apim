@@ -330,7 +330,7 @@ create_api() {
                 break
             fi
             n=$(($n + 1))
-            sleep 5
+            sleep 10
         done
         if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
             echo "Failed to set mediation policy to $api_name API"
@@ -367,4 +367,4 @@ EOF
 
 create_api "echo" "Echo API"
 echo -ne "\n"
-create_api "mediation" "Mediation API" "$(mediation_out_sequence | tr -d "\n\r")"
+

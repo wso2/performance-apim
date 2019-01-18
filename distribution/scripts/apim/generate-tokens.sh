@@ -80,7 +80,7 @@ if [[ -f $sql_file ]]; then
     mv $sql_file /tmp
 fi
 
-echo "Genearating Tokens.........."
+echo "Generating Tokens.........."
 
 for ((c = 1; c <= $tokens_count; c++)); do
     TOKEN_ID="$(get_random_string 36)"

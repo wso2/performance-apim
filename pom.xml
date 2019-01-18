@@ -58,6 +58,12 @@
                 <version>${performance.common.version}</version>
                 <type>tar.gz</type>
             </dependency>
+            <dependency>
+                <groupId>org.wos2.performance.apim</groupId>
+                <artifactId>performance-apim-distribution</artifactId>
+                <version>${performance.apim.version}</version>
+                <type>tar.gz</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
