@@ -47,21 +47,26 @@
     </scm>
 
     <modules>
+        <module>components/jwt-generator</module>
         <module>distribution</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.beust</groupId>
+                <artifactId>jcommander</artifactId>
+                <version>${jcommander.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${org.json.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.performance.common</groupId>
                 <artifactId>performance-common-distribution</artifactId>
                 <version>${performance.common.version}</version>
-                <type>tar.gz</type>
-            </dependency>
-            <dependency>
-                <groupId>org.wos2.performance.apim</groupId>
-                <artifactId>performance-apim-distribution</artifactId>
-                <version>${performance.apim.version}</version>
                 <type>tar.gz</type>
             </dependency>
         </dependencies>
@@ -122,6 +127,33 @@
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven.shade.plugin.version}</version>
+                    <configuration>
+                        <transformers>
+                            <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <manifestEntries>
+                                    <Main-Class>${main.class}</Main-Class>
+                                </manifestEntries>
+                            </transformer>
+                        </transformers>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
@@ -155,6 +187,8 @@
     </profiles>
 
     <properties>
+        <jcommander.version>1.72</jcommander.version>
+        <org.json.version>20180130</org.json.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <performance.apim.version>0.1.1-SNAPSHOT</performance.apim.version>
         <performance.common.version>0.2.1-SNAPSHOT</performance.common.version>

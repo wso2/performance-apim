@@ -68,10 +68,12 @@ popd
 
 echo "Waiting for Microgateway to start"
 
-if [ -e "/home/ubuntu/micro-gw-${label}/bin/gateway.pid" ]; then
-   echo "Mgw is running"
-   exit_status=0
-fi
+n=0
+until [ $n -ge 60 ]; do
+    nc -zv localhost 9095 && break
+    n=$(($n + 1))
+    sleep 1
+done
 
 # Wait for another 5 seconds to make sure that the server is ready to accept API requests.
 sleep 5

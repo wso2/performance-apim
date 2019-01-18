@@ -43,12 +43,12 @@
     </fileSets>
     <files>
         <file>
-            <source>../components/jwtgenerator/target/org.wso2.am.microgw.jwt-generator-1.0.0-jar-with-dependencies.jar</source>
+            <source>../components/jwt-generator/target/jwt-generator-1.0.0.jar</source>
             <outputDirectory>./jwt-generator</outputDirectory>
-            <destName>org.wso2.am.microgw.jwt-generator-1.0.0-jar-with-dependencies.jar</destName>
+            <destName>jwt-generator-1.0.0.jar</destName>
         </file>
         <file>
-            <source>../components/jwtgenerator/wso2carbon.jks</source>
+            <source>../components/jwt-generator/wso2carbon.jks</source>
             <outputDirectory>.</outputDirectory>
             <destName>wso2carbon.jks</destName>
         </file>

@@ -17,8 +17,8 @@
  */
 package org.wso2.am.microgw.jwt;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.am.microgw.jwt.model.API;
@@ -39,31 +39,43 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Base test class for CLI based tests
+ * JWT Token Generator for Microgateway Performance Tests
  */
 public class JWTGenerator {
-
-    private static final Log log = LogFactory.getLog(JWTGenerator.class);
 
     public static final String KEY_TYPE_PRODUCTION = "PRODUCTION";
     public static final String WSO2CARBON = "wso2carbon";
     public static final int VALIDITY_PERIOD = 3600 * 24 * 365;
 
+    int i = 0;
+    @Parameter(names = "--api-name", description = "API Name")
+    private static String apiName;
+
+    @Parameter(names = "--context", description = "API Context")
+    private static String context;
+
+    @Parameter(names = "--version", description = "API Version")
+    private static String version;
+
+    @Parameter(names = "--app-name", description = "Application Name")
+    private static String appName;
+
+    @Parameter(names = "--app-tier", description = "Application Tier")
+    private static String appTier;
+
+    @Parameter(names = "--subs-tier", description = "Subscription Tier")
+    private static String subsTier;
+
+    @Parameter(names = "--app-id", description = "Application ID")
+    private static int appId;
+
     public static void main(String[] args) throws Exception {
         JWTGenerator jwtGenerator = new JWTGenerator();
+        final JCommander jcmdr = new JCommander(jwtGenerator);
+        jcmdr.setProgramName(JWTGenerator.class.getSimpleName());
+        jcmdr.parse(args);
+
         ApplicationDTO application = new ApplicationDTO();
-
-        String apiName, context, version, appName, appTier, subsTier;
-        int appId;
-        int i = 0;
-        apiName = args[i++];
-        context = args[i++];
-        version = args[i++];
-        appName = args[i++];
-        appTier = args[i++];
-        subsTier = args[i++];
-        appId = Integer.parseInt(args[i++]);
-
         application.setName(appName);
         application.setTier(appTier);
         application.setId(appId);

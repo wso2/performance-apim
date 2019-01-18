@@ -222,16 +222,6 @@ api_create_request() {
 EOF
 }
 
-mediation_policy_request() {
-    cat <<EOF
-{
-    "name": "mediation-api-sequence",
-    "type": "out",
-    "config": "$1"
-}
-EOF
-}
-
 subscription_request() {
     cat <<EOF
 {
@@ -245,7 +235,6 @@ EOF
 create_api() {
     local api_name="$1"
     local api_desc="$2"
-    local out_sequence="$3"
     echo "Creating $api_name API..."
     # Check whether API exists
     local existing_api_id=$($curl_command -H "Authorization: Bearer $view_access_token" ${base_https_url}/api/am/publisher/v0.14/apis?query=name:$api_name\$ | jq -r '.list[0] | .id')
@@ -304,39 +293,6 @@ create_api() {
         echo -ne "\n"
         return
     fi
-    if [ ! -z "$out_sequence" ]; then
-        echo "Adding mediation policy to $api_name API"
-        local sequence_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -d "$(mediation_policy_request "$out_sequence")" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}/policies/mediation" | jq -r '.id')
-        if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
-            echo "Mediation policy added to $api_name API with ID $sequence_id"
-            echo -ne "\n"
-        else
-            echo "Failed to add mediation policy to $api_name API"
-            echo -ne "\n"
-            return
-        fi
-
-        #Get API
-        local api_details=$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}")
-        #Update API with sequence
-        echo "Updating $api_name API to set mediation policy..."
-        api_details=$(echo $api_details | jq -r '.sequences |= [{"name":"mediation-api-sequence","type":"out"}]')
-
-        n=0
-        until [ $n -ge 20 ]; do
-            updated_api_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}" | jq -r '.id')
-        if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
-            echo "Mediation policy is set to $api_name API with ID $updated_api_id"
-                break
-            fi
-            n=$(($n + 1))
-            sleep 10
-        done
-        if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
-            echo "Failed to set mediation policy to $api_name API"
-             exit 1
-        fi
-    fi
     echo "Subscribing $api_name API to DefaultApplication"
     local subscription_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/store/v0.14/subscriptions" | jq -r '.subscriptionId')
     if [ ! -z $subscription_id ] && [ ! $subscription_id = "null" ]; then
@@ -347,22 +303,6 @@ create_api() {
         echo -ne "\n"
         return
     fi
-}
-
-mediation_out_sequence() {
-    cat <<EOF
-<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"mediation-api-sequence\">
-    <payloadFactory media-type=\"json\">
-        <format>
-            {\"payload\":\"\$1\",\"size\":\"\$2\"}
-        </format>
-        <args>
-            <arg expression=\"\$.payload\" evaluator=\"json\"></arg>
-            <arg expression=\"\$.size\" evaluator=\"json\"></arg>
-        </args>
-    </payloadFactory>
-</sequence>
-EOF
 }
 
 create_api "echo" "Echo API"
