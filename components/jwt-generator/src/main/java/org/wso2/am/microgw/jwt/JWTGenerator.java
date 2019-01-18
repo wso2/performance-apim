@@ -47,7 +47,6 @@ public class JWTGenerator {
     public static final String WSO2CARBON = "wso2carbon";
     public static final int VALIDITY_PERIOD = 3600 * 24 * 365;
 
-    int i = 0;
     @Parameter(names = "--api-name", description = "API Name")
     private static String apiName;
 
