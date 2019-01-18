@@ -21,8 +21,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.am.microgw.jwt.model.API;
 import org.wso2.am.microgw.jwt.model.ApplicationDTO;
 import org.wso2.am.microgw.jwt.model.SubscribedApiDTO;
@@ -44,8 +42,6 @@ import java.util.concurrent.TimeUnit;
  * JWT Token Generator for Microgateway Performance Tests
  */
 public class JWTGenerator {
-
-    private static final Logger logger = LoggerFactory.getLogger(JWTGenerator.class);
 
     public static final String KEY_TYPE_PRODUCTION = "PRODUCTION";
     public static final String WSO2CARBON = "wso2carbon";
@@ -88,7 +84,7 @@ public class JWTGenerator {
         api.setContext(context);
         api.setVersion(version);
         String jwtTokenProd = jwtGenerator.getJWT(api, application, subsTier, KEY_TYPE_PRODUCTION, VALIDITY_PERIOD);
-        logger.info(jwtTokenProd);
+        System.out.println(jwtTokenProd);
     }
 
     protected String getJWT(API api, ApplicationDTO applicationDTO, String tier, String keyType, int validityPeriod)
