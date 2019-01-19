@@ -27,6 +27,7 @@ import org.wso2.am.microgw.jwt.model.SubscribedApiDTO;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -68,6 +69,8 @@ public class JWTGenerator {
     @Parameter(names = "--app-id", description = "Application ID")
     private static int appId;
 
+    private static PrintStream standardOutput = System.out;
+
     public static void main(String[] args) throws Exception {
         JWTGenerator jwtGenerator = new JWTGenerator();
         final JCommander jcmdr = new JCommander(jwtGenerator);
@@ -84,7 +87,7 @@ public class JWTGenerator {
         api.setContext(context);
         api.setVersion(version);
         String jwtTokenProd = jwtGenerator.getJWT(api, application, subsTier, KEY_TYPE_PRODUCTION, VALIDITY_PERIOD);
-        System.out.println(jwtTokenProd);
+        standardOutput.format("%s%n", jwtTokenProd);
     }
 
     protected String getJWT(API api, ApplicationDTO applicationDTO, String tier, String keyType, int validityPeriod)
