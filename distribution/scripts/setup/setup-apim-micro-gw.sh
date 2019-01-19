@@ -147,7 +147,7 @@ function setup() {
     chown -R $os_user /home/$os_user
 
     #start Micro-GW
-    sudo -u $os_user /home/$os_user/apim/micro-gw/micro-gw-start.sh
+    sudo -u $os_user /home/$os_user/apim/micro-gw/micro-gw-start.sh 256m 512m
 
     sudo -u $os_user /home/$os_user/apim/micro-gw/generate-jwt-tokens.sh 1000
 

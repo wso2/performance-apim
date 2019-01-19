@@ -19,7 +19,8 @@
 
 
 script_dir=$(dirname "$0")
-heap_size=$1
+min_heap_size=$1
+max_heap_size=$2
 
 label="echo-mgw"
 
@@ -53,6 +54,7 @@ fi
 
 echo "Enabling GC Logs"
 export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/micro-gw-${label}/logs/gc.log"
+JAVA_OPTS+=" -Xms${min_heap_size} -Xmx${max_heap_size}"
 JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="/home/ubuntu/micro-gw-${label}/runtime/heap-dump.hprof""
 
 jvm_dir=""

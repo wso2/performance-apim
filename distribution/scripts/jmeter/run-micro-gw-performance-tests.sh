@@ -61,7 +61,7 @@ function before_execute_test_scenario() {
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
         "tokens=$tokens")
     echo "Starting APIM Micro-GW service"
-    ssh $apim_ssh_host "./apim/micro-gw/micro-gw-start.sh -m $heap"
+    ssh $apim_ssh_host "./apim/micro-gw/micro-gw-start.sh 256m 512m"
 }
 
 function after_execute_test_scenario() {
