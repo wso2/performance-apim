@@ -31,9 +31,16 @@
             <unpack>true</unpack>
             <outputDirectory>.</outputDirectory>
         </dependencySet>
+        <dependencySet>
+            <outputDirectory>jwt-generator</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <includes>
+                <include>org.wso2.performance.apim:jwt-generator:jar</include>
+            </includes>
+        </dependencySet>
     </dependencySets>
-
-
+    
     <fileSets>
         <fileSet>
             <directory>scripts</directory>
@@ -42,11 +49,6 @@
         </fileSet>
     </fileSets>
     <files>
-        <file>
-            <source>../components/jwt-generator/target/jwt-generator-1.0.0.jar</source>
-            <outputDirectory>./jwt-generator</outputDirectory>
-            <destName>jwt-generator-1.0.0.jar</destName>
-        </file>
         <file>
             <source>../components/jwt-generator/wso2carbon.jks</source>
             <outputDirectory>.</outputDirectory>
