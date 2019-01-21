@@ -193,6 +193,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <performance.apim.version>0.1.1-SNAPSHOT</performance.apim.version>
         <performance.common.version>0.2.1-SNAPSHOT</performance.common.version>
+        <jwt.generator.version>1.0.0</jwt.generator.version>
         <!-- Maven Plugins -->
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
