@@ -19,26 +19,48 @@
 
 script_dir=$(dirname "$0")
 apim_host=""
-netty_host=""
+api_name=""
+api_description=""
+backend_endpoint_url=""
+default_backend_endpoint_type="http"
+backend_endpoint_type="$default_backend_endpoint_type"
+out_sequence=""
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -a <apim_host> -n <netty_host> [-h]"
+    echo "$0 -a <apim_host> -n <api_name> -d <api_description> -b <backend_endpoint_url>"
+    echo "   [-t <backend_endpoint_type>] [-o <out_sequence>] [-h]"
     echo ""
-    echo "-a: Hostname of WSO2 API Manager"
-    echo "-n: Hostname of Netty Service"
+    echo "-a: Hostname of WSO2 API Manager."
+    echo "-n: API Name."
+    echo "-d: API Description."
+    echo "-b: Backend endpoint URL."
+    echo "-t: Backend endpoint type. Default: $default_backend_endpoint_type."
+    echo "-o: Out Sequence."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "a:n:h" opt; do
+while getopts "a:n:d:b:t:o:h" opt; do
     case "${opt}" in
     a)
         apim_host=${OPTARG}
         ;;
     n)
-        netty_host=${OPTARG}
+        api_name=${OPTARG}
+        ;;
+    d)
+        api_description=${OPTARG}
+        ;;
+    b)
+        backend_endpoint_url=${OPTARG}
+        ;;
+    t)
+        backend_endpoint_type=${OPTARG}
+        ;;
+    o)
+        out_sequence=${OPTARG}
         ;;
     h)
         usage
@@ -57,11 +79,27 @@ done
 shift "$((OPTIND - 1))"
 
 if [[ -z $apim_host ]]; then
-    echo "Please provide the Hostname of Api Manager"
+    echo "Please provide the Hostname of WSO2 API Manager."
     exit 1
 fi
-if [[ -z $netty_host ]]; then
-    echo "Please provide the hostname of Netty Service."
+
+if [[ -z $api_name ]]; then
+    echo "Please provide the API Name."
+    exit 1
+fi
+
+if [[ -z $api_description ]]; then
+    echo "Please provide the API description."
+    exit 1
+fi
+
+if [[ -z $backend_endpoint_url ]]; then
+    echo "Please provide the backend endpoint URL."
+    exit 1
+fi
+
+if [[ -z $backend_endpoint_type ]]; then
+    echo "Please provide the backend endpoint type."
     exit 1
 fi
 
@@ -198,7 +236,7 @@ api_create_request() {
    "visibleTenants":[
 
    ],
-   "endpointConfig":"{\"production_endpoints\":{\"url\":\"http://${netty_host}:8688/\",\"config\":null},\"sandbox_endpoints\":{\"url\":\"http://${netty_host}:8688/\",\"config\":null},\"endpoint_type\":\"http\"}",
+   "endpointConfig":"{\"production_endpoints\":{\"url\":\"${backend_endpoint_url}\",\"config\":null},\"sandbox_endpoints\":{\"url\":\"${backend_endpoint_url}\",\"config\":null},\"endpoint_type\":\"${backend_endpoint_type}\"}",
    "endpointSecurity":null,
    "gatewayEnvironments":"Production and Sandbox",
    "labels":[
@@ -325,8 +363,8 @@ create_api() {
         n=0
         until [ $n -ge 20 ]; do
             updated_api_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}" | jq -r '.id')
-        if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
-            echo "Mediation policy is set to $api_name API with ID $updated_api_id"
+            if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
+                echo "Mediation policy is set to $api_name API with ID $updated_api_id"
                 break
             fi
             n=$(($n + 1))
@@ -334,7 +372,7 @@ create_api() {
         done
         if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
             echo "Failed to set mediation policy to $api_name API"
-             exit 1
+            return 1
         fi
     fi
     echo "Subscribing $api_name API to DefaultApplication"
@@ -349,22 +387,4 @@ create_api() {
     fi
 }
 
-mediation_out_sequence() {
-    cat <<EOF
-<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"mediation-api-sequence\">
-    <payloadFactory media-type=\"json\">
-        <format>
-            {\"payload\":\"\$1\",\"size\":\"\$2\"}
-        </format>
-        <args>
-            <arg expression=\"\$.payload\" evaluator=\"json\"></arg>
-            <arg expression=\"\$.size\" evaluator=\"json\"></arg>
-        </args>
-    </payloadFactory>
-</sequence>
-EOF
-}
-
-create_api "echo" "Echo API"
-echo -ne "\n"
-create_api "mediation" "Mediation API" "$(mediation_out_sequence | tr -d "\n\r")"
+create_api "$api_name" "$api_description" "$out_sequence"
