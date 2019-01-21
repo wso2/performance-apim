@@ -125,6 +125,23 @@ function validate() {
 }
 export -f validate
 
+function mediation_out_sequence() {
+    cat <<EOF
+<sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"mediation-api-sequence\">
+    <payloadFactory media-type=\"json\">
+        <format>
+            {\"payload\":\"\$1\",\"size\":\"\$2\"}
+        </format>
+        <args>
+            <arg expression=\"\$.payload\" evaluator=\"json\"></arg>
+            <arg expression=\"\$.size\" evaluator=\"json\"></arg>
+        </args>
+    </payloadFactory>
+</sequence>
+EOF
+}
+export -f mediation_out_sequence
+
 function setup() {
     install_dir=/home/$os_user
     $script_dir/../java/install-java.sh -f $oracle_jdk_dist
@@ -149,7 +166,9 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/apim-start.sh -m 1G
 
     # Create APIs in Local API Manager
-    sudo -u $os_user $script_dir/../apim/create-apis.sh -a localhost -n $netty_host
+    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "echo" -d "Echo API" -b "http://${netty_host}:8688/"
+    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "mediation" -d "Mediation API" -b "http://${netty_host}:8688/" \
+        -o "$(mediation_out_sequence | tr -d "\n\r")"
 
     # Generate tokens
     tokens_sql="$script_dir/../apim/target/tokens.sql"
