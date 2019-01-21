@@ -19,8 +19,39 @@
 
 
 script_dir=$(dirname "$0")
-min_heap_size=$1
-max_heap_size=$2
+default_heap_size="512m"
+heap_size="$default_heap_size"
+
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 [-m <heap_size>] [-h]"
+    echo "-m: The heap memory size of API Manager. Default: $default_heap_size."
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "m:h" opt; do
+    case "${opt}" in
+    m)
+        heap_size=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+if [[ -z $heap_size ]]; then
+    echo "Please provide the heap size for the API Microgateway."
+    exit 1
+fi
 
 label="echo-mgw"
 
@@ -54,7 +85,7 @@ fi
 
 echo "Enabling GC Logs"
 export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/micro-gw-${label}/logs/gc.log"
-JAVA_OPTS+=" -Xms${min_heap_size} -Xmx${max_heap_size}"
+JAVA_OPTS+=" -Xms${heap_size} -Xmx${heap_size}"
 JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="/home/ubuntu/micro-gw-${label}/runtime/heap-dump.hprof""
 
 jvm_dir=""

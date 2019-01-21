@@ -119,7 +119,7 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/apim-start.sh -m 1G
 
     # Create APIs in Local API Manager
-    sudo -u $os_user $script_dir/../apim/micro-gw/create-apis.sh -a localhost -n $netty_host
+    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "echo" -d "Echo API" -b "http://${netty_host}:8688/"
 
     #Extract the Micro-gw zip
     echo "Extracting WSO2 API Manager Micro Gateway"
@@ -147,7 +147,7 @@ function setup() {
     chown -R $os_user /home/$os_user
 
     #start Micro-GW
-    sudo -u $os_user /home/$os_user/apim/micro-gw/micro-gw-start.sh 256m 512m
+    sudo -u $os_user /home/$os_user/apim/micro-gw/micro-gw-start.sh -m 512m
 
     sudo -u $os_user /home/$os_user/apim/micro-gw/generate-jwt-tokens.sh 1000
 
