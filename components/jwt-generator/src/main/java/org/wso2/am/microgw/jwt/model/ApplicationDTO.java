@@ -18,12 +18,10 @@
 
 package org.wso2.am.microgw.jwt.model;
 
-import java.io.Serializable;
-
 /**
  * Application model
  */
-public class ApplicationDTO implements Serializable {
+public class ApplicationDTO {
 
     private int id;
     private String name;

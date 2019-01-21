@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-    # Copyright 2017 WSO2 Inc. (http://wso2.org)
+    # Copyright 2019 WSO2 Inc. (http://wso2.org)
     #
     # Licensed under the Apache License, Version 2.0 (the "License");
     # you may not use this file except in compliance with the License.
@@ -15,18 +15,4 @@
     # limitations under the License.
 -->
 <FindBugsFilter>
-    <Match>
-        <Bug pattern="EI_EXPOSE_REP"/>
-        <Class name="org.wso2.am.microgw.jwt.model.API"/>
-        <Method name="getTiers"/>
-    </Match>
-    <Match>
-        <Bug pattern="EI_EXPOSE_REP2"/>
-        <Class name="org.wso2.am.microgw.jwt.model.API"/>
-        <Method name="setTiers"/>
-    </Match>
-    <Match>
-        <Bug pattern="SE_NO_SERIALVERSIONID"/>
-        <Class name="org.wso2.am.microgw.jwt.model.ApplicationDTO"/>
-    </Match>
 </FindBugsFilter>

@@ -85,8 +85,8 @@
 {%- endif %}
 # WSO2 API Manager
 {% call ec2instance('WSO2APIManagerInstance', 'wso2am', '!Ref WSO2APIManagerInstanceType',
-  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'micro-gw.zip', 'ref': 'WSO2APIMicroGWDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
-/home/ubuntu/setup/setup-apim-micro-gw.sh -j /home/ubuntu/jdk-8-linux-x64.tar.gz -a /home/ubuntu/wso2am.zip -m /home/ubuntu/micro-gw.zip -n ${BackendInstance.PrivateIp} -u ubuntu
+  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'wso2am-micro-gw.zip', 'ref': 'WSO2APIMicroGWDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
+/home/ubuntu/setup/setup-apim-micro-gw.sh -j /home/ubuntu/jdk-8-linux-x64.tar.gz -a /home/ubuntu/wso2am.zip -m /home/ubuntu/wso2am-micro-gw.zip -n ${BackendInstance.PrivateIp} -u ubuntu
 {%- endcall %}
 # Backend
 {% call ec2instance('BackendInstance', 'backend', '!Ref BackendInstanceType',

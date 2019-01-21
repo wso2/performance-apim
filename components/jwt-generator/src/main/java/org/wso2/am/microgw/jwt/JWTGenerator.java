@@ -21,21 +21,27 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.am.microgw.jwt.model.API;
 import org.wso2.am.microgw.jwt.model.ApplicationDTO;
 import org.wso2.am.microgw.jwt.model.SubscribedApiDTO;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.util.Arrays;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -44,30 +50,23 @@ import java.util.concurrent.TimeUnit;
  */
 public class JWTGenerator {
 
-    public static final String KEY_TYPE_PRODUCTION = "PRODUCTION";
-    public static final String WSO2CARBON = "wso2carbon";
-    public static final int VALIDITY_PERIOD = 3600 * 24 * 365;
+    private static final String KEY_TYPE_PRODUCTION = "PRODUCTION";
+    private static final String WSO2CARBON = "wso2carbon";
+    private static final int VALIDITY_PERIOD = 3600 * 24 * 365;
 
-    @Parameter(names = "--api-name", description = "API Name")
-    private static String apiName;
+    @Parameter(names = "--api-name", description = "API Name") private String apiName;
 
-    @Parameter(names = "--context", description = "API Context")
-    private static String context;
+    @Parameter(names = "--context", description = "API Context") private String context;
 
-    @Parameter(names = "--version", description = "API Version")
-    private static String version;
+    @Parameter(names = "--version", description = "API Version") private String version;
 
-    @Parameter(names = "--app-name", description = "Application Name")
-    private static String appName;
+    @Parameter(names = "--app-name", description = "Application Name") private String appName;
 
-    @Parameter(names = "--app-tier", description = "Application Tier")
-    private static String appTier;
+    @Parameter(names = "--app-tier", description = "Application Tier") private String appTier;
 
-    @Parameter(names = "--subs-tier", description = "Subscription Tier")
-    private static String subsTier;
+    @Parameter(names = "--subs-tier", description = "Subscription Tier") private String subsTier;
 
-    @Parameter(names = "--app-id", description = "Application ID")
-    private static int appId;
+    @Parameter(names = "--app-id", description = "Application ID") private int appId;
 
     private static PrintStream standardOutput = System.out;
 
@@ -77,37 +76,35 @@ public class JWTGenerator {
         jcmdr.setProgramName(JWTGenerator.class.getSimpleName());
         jcmdr.parse(args);
 
+        String jwtTokenProd = jwtGenerator.getJWT(KEY_TYPE_PRODUCTION, VALIDITY_PERIOD);
+        standardOutput.format("%s%n", jwtTokenProd);
+    }
+
+    private String getJWT(String keyType, int validityPeriod)
+            throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateException,
+            UnrecoverableKeyException, InvalidKeyException, SignatureException {
+
         ApplicationDTO application = new ApplicationDTO();
         application.setName(appName);
         application.setTier(appTier);
         application.setId(appId);
 
-        API api = new API();
-        api.setName(apiName);
-        api.setContext(context);
-        api.setVersion(version);
-        String jwtTokenProd = jwtGenerator.getJWT(api, application, subsTier, KEY_TYPE_PRODUCTION, VALIDITY_PERIOD);
-        standardOutput.format("%s%n", jwtTokenProd);
-    }
-
-    protected String getJWT(API api, ApplicationDTO applicationDTO, String tier, String keyType, int validityPeriod)
-            throws Exception {
         SubscribedApiDTO subscribedApiDTO = new SubscribedApiDTO();
-        subscribedApiDTO.setContext("/" + api.getContext() + "/" + api.getVersion());
-        subscribedApiDTO.setName(api.getName());
-        subscribedApiDTO.setVersion(api.getVersion());
+        subscribedApiDTO.setContext("/" + context + "/" + version);
+        subscribedApiDTO.setName(apiName);
+        subscribedApiDTO.setVersion(version);
         subscribedApiDTO.setPublisher("admin");
-        subscribedApiDTO.setSubscriptionTier(tier);
+        subscribedApiDTO.setSubscriptionTier(subsTier);
         subscribedApiDTO.setSubscriberTenantDomain("carbon.super");
 
         JSONObject jwtTokenInfo = new JSONObject();
         jwtTokenInfo.put("aud", "http://org.wso2.apimgt/gateway");
         jwtTokenInfo.put("sub", "admin");
-        jwtTokenInfo.put("application", new JSONObject(applicationDTO));
+        jwtTokenInfo.put("application", new JSONObject(application));
         jwtTokenInfo.put("scope", "am_application_scope default");
         jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
         jwtTokenInfo.put("keytype", keyType);
-        jwtTokenInfo.put("subscribedAPIs", new JSONArray(Arrays.asList(subscribedApiDTO)));
+        jwtTokenInfo.put("subscribedAPIs", new JSONArray(Collections.singletonList(subscribedApiDTO)));
         jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) + validityPeriod);
         jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
         jwtTokenInfo.put("jti", UUID.randomUUID());
@@ -125,19 +122,12 @@ public class JWTGenerator {
         String base64UrlEncodedBody = Base64.getUrlEncoder().encodeToString(payload.getBytes(Charset.defaultCharset()));
 
         Signature signature = Signature.getInstance("SHA256withRSA");
-        FileInputStream is = null;
-        KeyStore keystore = null;
-        try {
-            is = new FileInputStream(new File("wso2carbon.jks"));
+        KeyStore keystore;
+        try (FileInputStream is = new FileInputStream(new File("wso2carbon.jks"));) {
             keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             keystore.load(is, WSO2CARBON.toCharArray());
-        } finally {
-            if (is != null) {
-                is.close();
-            }
         }
-        String alias = WSO2CARBON;
-        Key key = keystore.getKey(alias, WSO2CARBON.toCharArray());
+        Key key = keystore.getKey(WSO2CARBON, WSO2CARBON.toCharArray());
         Key privateKey = null;
         if (key instanceof PrivateKey) {
             privateKey = key;
@@ -149,7 +139,6 @@ public class JWTGenerator {
         //sign the assertion and return the signature
         byte[] signedAssertion = signature.sign();
         String base64UrlEncodedAssertion = Base64.getUrlEncoder().encodeToString(signedAssertion);
-        is.close();
         return base64UrlEncodedHeader + '.' + base64UrlEncodedBody + '.' + base64UrlEncodedAssertion;
     }
 }
