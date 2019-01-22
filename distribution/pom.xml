@@ -35,6 +35,10 @@
             <artifactId>performance-common-distribution</artifactId>
             <type>tar.gz</type>
         </dependency>
+        <dependency>
+            <groupId>org.wso2.performance.apim</groupId>
+            <artifactId>jwt-generator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
