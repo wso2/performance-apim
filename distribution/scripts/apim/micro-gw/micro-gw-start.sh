@@ -17,7 +17,6 @@
 # Start WSO2 API Manager Micro Gateway
 # ----------------------------------------------------------------------------
 
-
 script_dir=$(dirname "$0")
 default_label="echo-mgw"
 label="$default_label"
@@ -65,19 +64,17 @@ if [[ -z $label ]]; then
 fi
 
 if [ -e "/home/ubuntu/micro-gw-${label}/bin/gateway.pid" ]; then
-  PID=`cat "/home/ubuntu/micro-gw-${label}/bin/gateway.pid"`
+    PID=$(cat "/home/ubuntu/micro-gw-${label}/bin/gateway.pid")
 fi
 
-if pgrep -f ballerina > /dev/null;
-then
+if pgrep -f ballerina >/dev/null; then
     echo "Shutting down microgateway"
     pgrep -f ballerina | xargs kill -9
 fi
 
 echo "Waiting for microgateway to stop"
-while true
-do
-    if ! pgrep -f ballerina > /dev/null; then
+while true; do
+    if ! pgrep -f ballerina >/dev/null; then
         echo "Microgateway stopped"
         break
     else
@@ -89,7 +86,7 @@ log_files=(/home/ubuntu/micro-gw-${label}/logs/*)
 
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp"
-    mv /home/ubuntu/micro-gw-${label}/logs/* /tmp/;
+    mv /home/ubuntu/micro-gw-${label}/logs/* /tmp/
 fi
 
 echo "Enabling GC Logs"
@@ -105,7 +102,7 @@ export JAVA_HOME="${jvm_dir}"
 
 echo "Starting Microgateway"
 pushd /home/ubuntu/micro-gw-${label}/bin/
-bash gateway > /dev/null &
+bash gateway >/dev/null &
 popd
 
 echo "Waiting for Microgateway to start"

@@ -21,7 +21,7 @@ script_dir=$(dirname "$0")
 tokens_count=$1
 
 validate() {
-    if [[ -z  $1  ]]; then
+    if [[ -z $1 ]]; then
         echo "Please provide arguments. Example: $0 tokens_count"
         exit 1
     fi
@@ -38,10 +38,9 @@ fi
 
 echo "Generating Tokens.........."
 
-for (( c=1; c <= $tokens_count; c++ ))
-do
-	JWT_TOKEN=$(java -jar /home/ubuntu/jwt-generator/jwt-generator-${performance.apim.version}.jar --api-name "echo" --context "/echo" --version "1.0.0" --app-name "DefaultApplication" --app-tier "Unlimited" --subs-tier "Unlimited" --app-id 1)
-    echo $JWT_TOKEN >> $tokens_file
+for ((c = 1; c <= $tokens_count; c++)); do
+    JWT_TOKEN=$(java -jar /home/ubuntu/jwt-generator/jwt-generator-${performance.apim.version}.jar --api-name "echo" --context "/echo" --version "1.0.0" --app-name "DefaultApplication" --app-tier "Unlimited" --subs-tier "Unlimited" --app-id 1)
+    echo $JWT_TOKEN >>$tokens_file
     echo -ne "Generated Tokens Count: ${c}\r"
 done
 

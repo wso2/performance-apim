@@ -71,8 +71,8 @@ function validate() {
     fi
 
     if [[ ! -f $wso2am_micro_gw_distribution ]]; then
-            echo "Please provide WSO2 API Microgateway distribution."
-            exit 1
+        echo "Please provide WSO2 API Microgateway distribution."
+        exit 1
     fi
 
     export wso2am_micro_gw_distribution_filename=$(basename $wso2am_micro_gw_distribution)
