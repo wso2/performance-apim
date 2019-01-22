@@ -54,19 +54,26 @@ public class JWTGenerator {
     private static final String WSO2CARBON = "wso2carbon";
     private static final int VALIDITY_PERIOD = 3600 * 24 * 365;
 
-    @Parameter(names = "--api-name", description = "API Name") private String apiName;
+    @Parameter(names = "--api-name", description = "API Name")
+    private String apiName;
 
-    @Parameter(names = "--context", description = "API Context") private String context;
+    @Parameter(names = "--context", description = "API Context")
+    private String context;
 
-    @Parameter(names = "--version", description = "API Version") private String version;
+    @Parameter(names = "--version", description = "API Version")
+    private String version;
 
-    @Parameter(names = "--app-name", description = "Application Name") private String appName;
+    @Parameter(names = "--app-name", description = "Application Name")
+    private String appName;
 
-    @Parameter(names = "--app-tier", description = "Application Tier") private String appTier;
+    @Parameter(names = "--app-tier", description = "Application Tier")
+    private String appTier;
 
-    @Parameter(names = "--subs-tier", description = "Subscription Tier") private String subsTier;
+    @Parameter(names = "--subs-tier", description = "Subscription Tier")
+    private String subsTier;
 
-    @Parameter(names = "--app-id", description = "Application ID") private int appId;
+    @Parameter(names = "--app-id", description = "Application ID")
+    private int appId;
 
     private static PrintStream standardOutput = System.out;
 

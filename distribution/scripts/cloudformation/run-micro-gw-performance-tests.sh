@@ -128,5 +128,6 @@ export -f get_columns
 export aws_cloudformation_template_filename="apim_micro_gw_perf_test_cfn.yaml"
 export application_name="WSO2 API Microgateway"
 export metrics_file_prefix="microgateway"
+export run_performance_tests_script_name="run-micro-gw-performance-tests.sh"
 
 $script_dir/cloudformation-common.sh "${opts[@]}" -- "$@"

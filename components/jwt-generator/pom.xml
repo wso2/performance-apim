@@ -29,7 +29,6 @@
     <artifactId>jwt-generator</artifactId>
     <packaging>jar</packaging>
     <name>JWT Token Generator for Microgateway</name>
-    <version>1.0.0</version>
 
     <dependencies>
         <dependency>

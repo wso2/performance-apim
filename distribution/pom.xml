@@ -38,8 +38,6 @@
         <dependency>
             <groupId>org.wso2.performance.apim</groupId>
             <artifactId>jwt-generator</artifactId>
-            <version>${jwt.generator.version}</version>
-            <type>jar</type>
         </dependency>
     </dependencies>
 

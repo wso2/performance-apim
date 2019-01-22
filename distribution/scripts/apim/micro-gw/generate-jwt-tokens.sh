@@ -40,7 +40,7 @@ echo "Generating Tokens.........."
 
 for (( c=1; c <= $tokens_count; c++ ))
 do
-	JWT_TOKEN=$(java -jar /home/ubuntu/jwt-generator/jwt-generator-1.0.0.jar --api-name "echo" --context "/echo" --version "1.0.0" --app-name "DefaultApplication" --app-tier "Unlimited" --subs-tier "Unlimited" --app-id 1)
+	JWT_TOKEN=$(java -jar /home/ubuntu/jwt-generator/jwt-generator-${performance.apim.version}.jar --api-name "echo" --context "/echo" --version "1.0.0" --app-name "DefaultApplication" --app-tier "Unlimited" --subs-tier "Unlimited" --app-id 1)
     echo $JWT_TOKEN >> $tokens_file
     echo -ne "Generated Tokens Count: ${c}\r"
 done

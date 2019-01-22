@@ -36,7 +36,7 @@
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
             <includes>
-                <include>org.wso2.performance.apim:jwt-generator:jar</include>
+                <include>org.wso2.performance.apim:jwt-generator</include>
             </includes>
         </dependencySet>
     </dependencySets>

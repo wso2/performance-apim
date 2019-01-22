@@ -134,22 +134,20 @@ function setup() {
     export JAVA_HOME="${jvm_dir}"
 
     #Export the PATH of Micro-GW
-    export PATH=$PATH:/home/$os_user/micro-gw/bin
+    export PATH=$PATH:$PWD/micro-gw/bin
 
     # setup Micro-GW project
-    chmod +x /home/$os_user/apim/micro-gw/create-micro-gw.sh
-    /home/$os_user/apim/micro-gw/create-micro-gw.sh
+    ./apim/micro-gw/create-micro-gw.sh
 
     #build Micro-GW
     micro-gw build echo-mgw
 
-    unzip /home/$os_user/echo-mgw/target/micro-gw-echo-mgw.zip
-    chown -R $os_user /home/$os_user
+    sudo -u $os_user unzip -q echo-mgw/target/micro-gw-echo-mgw.zip
 
     #start Micro-GW
-    sudo -u $os_user /home/$os_user/apim/micro-gw/micro-gw-start.sh -m 512m
+    sudo -u $os_user ./apim/micro-gw/micro-gw-start.sh -m 512m -n echo-mgw
 
-    sudo -u $os_user /home/$os_user/apim/micro-gw/generate-jwt-tokens.sh 1000
+    sudo -u $os_user ./apim/micro-gw/generate-jwt-tokens.sh 1000
 
     popd
     echo "Completed API Manager setup..."

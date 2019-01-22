@@ -19,22 +19,28 @@
 
 
 script_dir=$(dirname "$0")
+default_label="echo-mgw"
+label="$default_label"
 default_heap_size="512m"
 heap_size="$default_heap_size"
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 [-m <heap_size>] [-h]"
-    echo "-m: The heap memory size of API Manager. Default: $default_heap_size."
+    echo "$0 [-m <heap_size>] [-n <label>] [-h]"
+    echo "-m: The heap memory size of API Microgateway. Default: $default_heap_size."
+    echo "-n: The identifier for the built Microgateway distribution. Default: $default_label."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "m:h" opt; do
+while getopts "m:n:h" opt; do
     case "${opt}" in
     m)
         heap_size=${OPTARG}
+        ;;
+    n)
+        label=${OPTARG}
         ;;
     h)
         usage
@@ -53,7 +59,10 @@ if [[ -z $heap_size ]]; then
     exit 1
 fi
 
-label="echo-mgw"
+if [[ -z $label ]]; then
+    echo "Please provide the identifier for the built Microgateway distribution."
+    exit 1
+fi
 
 if [ -e "/home/ubuntu/micro-gw-${label}/bin/gateway.pid" ]; then
   PID=`cat "/home/ubuntu/micro-gw-${label}/bin/gateway.pid"`
