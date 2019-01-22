@@ -144,7 +144,7 @@ export -f mediation_out_sequence
 
 function setup() {
     install_dir=/home/$os_user
-    $script_dir/../java/install-java.sh -f $oracle_jdk_dist
+    $script_dir/../java/install-java.sh -f $oracle_jdk_dist -u $os_user
 
     pushd ${install_dir}
 
