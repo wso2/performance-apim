@@ -15,14 +15,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.am.microgw.jwt;
+package org.wso2.performance.apim.microgw.jwt;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.am.microgw.jwt.model.ApplicationDTO;
-import org.wso2.am.microgw.jwt.model.SubscribedApiDTO;
+import org.wso2.performance.apim.microgw.jwt.model.ApplicationDTO;
+import org.wso2.performance.apim.microgw.jwt.model.SubscribedApiDTO;
 
 import java.io.File;
 import java.io.FileInputStream;

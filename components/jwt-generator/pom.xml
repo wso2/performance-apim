@@ -51,6 +51,6 @@
     </build>
 
     <properties>
-        <main.class>org.wso2.am.microgw.jwt.JWTGenerator</main.class>
+        <main.class>org.wso2.performance.apim.microgw.jwt.JWTGenerator</main.class>
     </properties>
 </project>

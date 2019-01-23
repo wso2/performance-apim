@@ -16,7 +16,7 @@
 * under the License.
 */
 
-package org.wso2.am.microgw.jwt.model;
+package org.wso2.performance.apim.microgw.jwt.model;
 
 /**
  * Subscription API model
