@@ -32,7 +32,7 @@ function initialize() {
     if [[ $jmeter_servers -gt 1 ]]; then
         for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
             echo "Copying tokens to $jmeter_ssh_host"
-	        scp $HOME/jwt-tokens.csv $jmeter_ssh_host:
+            scp $HOME/jwt-tokens.csv $jmeter_ssh_host:
             scp $HOME/tokens.csv $jmeter_ssh_host:
         done
     fi
@@ -41,7 +41,7 @@ export -f initialize
 
 declare -A test_scenario0=(
     [name]="microgw-passthrough-oauth2"
-    [display_name]="Microgateway-Passthrough - OAuth2"
+    [display_name]="Microgateway-Passthrough-OAuth2"
     [description]="A secured API, which directly invokes the backend through Microgateway using OAuth2 tokens"
     [jmx]="apim-test.jmx"
     [protocol]="https"
@@ -54,7 +54,7 @@ declare -A test_scenario0=(
 
 declare -A test_scenario1=(
     [name]="microgw-passthrough-jwt"
-    [display_name]="Microgateway - Passthrough - JWT"
+    [display_name]="Microgateway-Passthrough-JWT"
     [description]="A secured API, which directly invokes the backend through Microgateway using JWT tokens"
     [jmx]="apim-test.jmx"
     [protocol]="https"

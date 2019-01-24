@@ -103,9 +103,9 @@ function validate() {
         exit 1
     fi
     if [[ -z $micro_gw_product ]]; then
-            echo "Please provide the API Microgateway Distribution."
-            exit 1
-        fi
+        echo "Please provide the API Microgateway Distribution."
+        exit 1
+    fi
     if [[ ! -f $mysql_connector_file ]]; then
         echo "Please provide the MySQL connector file."
         exit 1
@@ -205,7 +205,7 @@ function setup() {
     fi
 
     popd
-    echo "Completed API Manager setup..."
+    echo "Completed API Micro-Gateway setup..."
 }
 export -f setup
 
