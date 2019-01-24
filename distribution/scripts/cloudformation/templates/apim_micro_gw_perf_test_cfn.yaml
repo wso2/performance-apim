@@ -27,11 +27,25 @@
       Type: String
       ConstraintDescription: must be a valid zip package
       AllowedPattern: ^.*\.zip$
+  MySQLConnectorJarName:
+    Description: The name of the MySQL Connector Jar in the S3 Backet
+    Type: String
+    ConstraintDescription: must be a valid jar file
+    AllowedPattern: ^.*\.jar$
   WSO2APIManagerInstanceType:
     Description: WSO2 API Manager EC2 instance type
     Type: String
   BackendInstanceType:
     Description: Backend EC2 instance type
+    Type: String
+  WSO2APIManagerDBInstanceClass:
+    Description: WSO2 API Manager database instance class for RDS Instance
+    Type: String
+  MasterUsername:
+    Description: Username of RDS DB Instance
+    Type: String
+  MasterUserPassword:
+    Description: Password of RDS DB Instance
     Type: String
 {%- endblock %}
 {% block resources -%}
@@ -55,6 +69,13 @@
     Properties:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable
+  WSO2APIManagerDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "Subnet group for WSO2 API Manager RDS DB"
+      SubnetIds:
+        - !Ref PrivateSubnet
+        - !Ref PrivateSubnet2
 {%- endblock %}
 {% block ec2instances -%}
 # JMeter Client
@@ -85,14 +106,32 @@
 {%- endif %}
 # WSO2 API Manager
 {% call ec2instance('WSO2APIManagerInstance', 'wso2am', '!Ref WSO2APIManagerInstanceType',
-  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'wso2am-micro-gw.zip', 'ref': 'WSO2APIMicroGWDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
-/home/ubuntu/setup/setup-apim-micro-gw.sh -j /home/ubuntu/jdk-8-linux-x64.tar.gz -a /home/ubuntu/wso2am.zip -m /home/ubuntu/wso2am-micro-gw.zip -n ${BackendInstance.PrivateIp} -u ubuntu
+  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'wso2am-micro-gw.zip', 'ref': 'WSO2APIMicroGWDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}, {'name': 'mysql-connector-java.jar', 'ref': 'MySQLConnectorJarName'}]) -%}
+/home/ubuntu/setup/setup-apim-micro-gw.sh -j /home/ubuntu/jdk-8-linux-x64.tar.gz -a /home/ubuntu/wso2am.zip -k /home/ubuntu/wso2am-micro-gw.zip -c /home/ubuntu/mysql-connector-java.jar -n ${BackendInstance.PrivateIp} -m ${RDSInstance.Endpoint.Address} -u ${MasterUsername} -p ${MasterUserPassword} -b ubuntu
 {%- endcall %}
 # Backend
 {% call ec2instance('BackendInstance', 'backend', '!Ref BackendInstanceType',
   files=[{'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}]) -%}
 /home/ubuntu/setup/setup-netty.sh -g -d /home/ubuntu/jdk-8-linux-x64.tar.gz
 {%- endcall %}
+  RDSInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: !Ref WSO2APIManagerDBInstanceClass
+      AllocatedStorage: '5'
+      Engine: 'MySQL'
+      EngineVersion: '5.7'
+      BackupRetentionPeriod: '0'
+      MasterUsername: !Ref MasterUsername
+      MasterUserPassword: !Ref MasterUserPassword
+      MultiAZ: false
+      DBSubnetGroupName: !Ref WSO2APIManagerDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref InstanceSecurityGroup
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
+    DeletionPolicy: Delete
 {%- endblock %}
 {% block outputs %}
   JMeterClientPublicIP:
