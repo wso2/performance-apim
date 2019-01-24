@@ -27,28 +27,79 @@ Following is the recommended deployment for performance testing All-in-one WSO2 
 
 Following is the tree view of the contents inside distribution package.
 
-```
+```console
+ubuntu@server:~$ tree --charset=ascii | sed -e 's/[0-9]\.[0-9]\.[0-9].*\.jar/${version}.jar/g'
+.
 |-- apim
 |   |-- apim-start.sh
 |   |-- conf
-|   |   |-- api-manager.xml
 |   |   |-- datasources
 |   |   |   `-- master-datasources.xml
 |   |   |-- registry.xml
 |   |   `-- user-mgt.xml
 |   |-- configure.sh
-|   |-- create-apis.sh
+|   |-- create-api.sh
 |   |-- generate-tokens.sh
-|   |-- setup.sh
+|   |-- micro-gw
+|   |   |-- create-micro-gw.sh
+|   |   |-- generate-jwt-tokens.sh
+|   |   |-- jwt-generator-${version}.jar
+|   |   |-- micro-gw-start.sh
+|   |   `-- wso2carbon.jks
 |   `-- sqls
 |       `-- create-databases.sql
-`-- jmeter
-    |-- apimchart.py
-    |-- apim-test.jmx
-    |-- create-charts.py
-    |-- create-comparison-charts.py
-    |-- create-summary-csv.sh
-    `-- run-performance-test.sh
+|-- cloudformation
+|   |-- cloudformation-common.sh
+|   |-- create-template.py
+|   |-- download-logs.sh
+|   |-- get-wum-updated-wso2-product.sh
+|   |-- python-requirements.txt
+|   |-- run-micro-gw-performance-tests.sh
+|   |-- run-performance-tests.sh
+|   `-- templates
+|       |-- apim_micro_gw_perf_test_cfn.yaml
+|       |-- apim_perf_test_cfn.yaml
+|       `-- common_perf_test_cfn.yaml
+|-- common
+|   `-- common.sh
+|-- java
+|   `-- install-java.sh
+|-- jmeter
+|   |-- apimchart.py
+|   |-- apim-test.jmx
+|   |-- create-charts.py
+|   |-- create-comparison-charts.py
+|   |-- create-summary-csv.sh
+|   |-- create-summary-markdown.py
+|   |-- csv-to-markdown-converter.py
+|   |-- install-jmeter.sh
+|   |-- jmeter-server-start.sh
+|   |-- perf-test-common.sh
+|   |-- run-micro-gw-performance-tests.sh
+|   |-- run-performance-tests.sh
+|   |-- templates
+|   |   `-- summary.md
+|   `-- user.properties
+|-- jtl-splitter
+|   |-- jtl-splitter-${version}.jar
+|   `-- jtl-splitter.sh
+|-- netty-service
+|   |-- netty-http-echo-service-${version}.jar
+|   `-- netty-start.sh
+|-- payloads
+|   |-- generate-payloads.sh
+|   `-- payload-generator-${version}.jar
+|-- sar
+|   `-- install-sar.sh
+`-- setup
+    |-- setup-apim-micro-gw.sh
+    |-- setup-apim.sh
+    |-- setup-common.sh
+    |-- setup-jmeter-client.sh
+    |-- setup-jmeter.sh
+    `-- setup-netty.sh
+
+16 directories, 52 files
 ```
 
 Each directory has executable scripts.
@@ -56,214 +107,111 @@ Each directory has executable scripts.
 This package must be extracted in user home directory of all JMeter nodes and the API Manager node used for the
  performance tests.
 
-In addition, please make sure to extract the "performance-common" package to all nodes and install Java, JMeter, and SAR
- to all nodes by using scripts provided.
-
 **Note:** These scripts will work only on Debian based systems like Ubuntu.
 
 See following sections for more details.
 
-### WSO2 API Manager
+## Running performance tests on AWS
 
-The "apim" directory has the scripts related to WSO2 API Manager and the configurations. These scripts must be run in
- WSO2 API Manager node.
+The performance tests can be run on AWS
 
-Following sections have more details about each script.
+### Testing WSO2 API Manager Gateway
 
-#### setup.sh
+Use `cloudformation/run-performance-tests.sh` to run performance tests on WSO2 API Manager Gateway.
 
-The `setup.sh` script is the only script you need to run to set up and configure WSO2 API Manager.
+```console
+ubuntu@server:~$ ./cloudformation/run-performance-tests.sh -h
 
-This script extracts WSO2 API Manager to user home directory, configures it, creates APIs, and generates the required
- OAuth2 access tokens for the created APIs.
+Usage: 
+./cloudformation/run-performance-tests.sh -f <performance_scripts_distribution> [-d <results_dir>] -k <key_file> -n <key_name>
+   -j <jmeter_distribution> -o <oracle_jdk_distribution> -g <gcviewer_jar_path>
+   -s <stack_name_prefix> -b <s3_bucket_name> -r <s3_bucket_region>
+   -J <jmeter_client_ec2_instance_type> -S <jmeter_server_ec2_instance_type>
+   -N <netty_ec2_instance_type> 
+   -a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class>
+   [-t <number_of_stacks>] [-p <parallel_parameter_option>] [-w <minimum_stack_creation_wait_time>]
+   [-h] -- [run_performance_tests_options]
 
-This script invokes `configure.sh`, `apim-start.sh`, `create-apis.sh`, and `generate-tokens.sh` scripts.
-
-How to run:
-
-`./setup.sh netty_host mysql_host mysql_user mysql_password mysql_connector_jar`
-
-Latest MySQL connector must be downloaded.
-
-#### configure.sh
-
-The `configure.sh` script creates the databases (for API Manager, Registry, and User store) in MySQL server and
- copies the configurations.
-
-The pre-configured configuration files are inside `conf` directory and the script changes those configurations to use
- the given MySQL server.
-
-How to run:
-
-`./configure.sh mysql_host mysql_user mysql_pw mysql_connector_jar`
-
-**Note:** This script is called from `setup.sh`.
-
-#### apim-start.sh
-
-This script starts the WSO2 API Manager with the given Java heap size and enable Garbage Collection (GC) logs in the
- server.
-
-How to run:
-
-`./apim-start.sh 4`
-
-Above example will start the API Manager with 4GB of heap.
-
-**Note:** This script is called from `setup.sh` and the performance test script.
-
-#### create-apis.sh
-
-This script creates two APIs.
-
-1. Echo API: This is a direct proxy
-2. Mediation API: This has an "OUT" sequence with JSON to JSON Payload Factory mediator). The sequence depends on the
- payloads generated by the `generate-payloads.sh` script in `performance-common` package.
-
-How to run:
-
-`./create-apis.sh apim_host netty_host`
-
-**Note:** This script is called from `setup.sh`.
-
-#### generate-tokens.sh
-
-This script generates tokens to be used by the performance testing script. Two files will be created in the `target`
- directory.
-
-1. tokens.sql: This SQL file is used to insert tokens to the MySQL table. The `setup.sh` uses this SQL file and executes
- the sql file in API Manager MySQL database.
-2. tokens.csv: This file has all tokens and this file must be copied to the user home directory of all JMeter nodes.
-
-How to run:
-
-`./generate-tokens.sh tokens_count`
-
-**Note:** This script is called from `setup.sh`.
-
-### Apache JMeter
-
-Inside "jmeter", directory there are two scripts to run the performance tests and create a summary CSV from the JMeter
- results.
-
-#### run-performance-test.sh
-
-The `run-performance-test.sh` script runs the performance tests for different test scenarios. This script must be used
- in the JMeter client node and it uses the two JMeter servers to load test WSO2 API Manager
-
-This script is using ssh config to connect with other nodes from JMeter client and get server metrics and log files.
- Therefore, it is important use a configuration as follows in `~/.ssh/config`
-
-```
-Host apimjmeter1
-    HostName x.x.x.1
-    User ubuntu
-    IdentityFile ~/keys/apim.pem
-
-Host apimjmeter2
-    HostName x.x.x.2
-    User ubuntu
-    IdentityFile ~/keys/apim.pem
-
-Host apim
-    HostName x.x.x.3
-    User ubuntu
-    IdentityFile ~/keys/apim.pem
-
-Host apimnetty
-    HostName x.x.x.4
-    User ubuntu
-    IdentityFile ~/keys/apim.pem
+-f: Distribution containing the scripts to run performance tests.
+-d: The results directory. Default value is a directory with current time. For example, results-20190124105848.
+-k: Amazon EC2 Key File. Amazon EC2 Key Name must match with this file name.
+-n: Amazon EC2 Key Name.
+-j: Apache JMeter (tgz) distribution.
+-o: Oracle JDK distribution.
+-g: Path of GCViewer Jar file, which will be used to analyze GC logs.
+-s: The Amazon CloudFormation Stack Name Prefix.
+-b: Amazon S3 Bucket Name.
+-r: Amazon S3 Bucket Region.
+-J: Amazon EC2 Instance Type for JMeter Client.
+-S: Amazon EC2 Instance Type for JMeter Server.
+-N: Amazon EC2 Instance Type for Netty (Backend) Service.
+-a: WSO2 API Manager Distribution.
+-c: MySQL Connector JAR file.
+-A: Amazon EC2 Instance Type for WSO2 API Manager.
+-D: Amazon EC2 DB Instance Class for WSO2 API Manager RDS Instance.
+-t: Number of stacks to create. Default: 1.
+-p: Parameter option of the test script, which will be used to run tests in parallel.
+    Default: u. Allowed option characters: ubsm.
+-w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status.
+    Default: 5.
+-h: Display this help and exit.
 ```
 
-There are multiple parameters inside the script and the values should be changed as required.
+### Testing Micro-Gateway
 
- Parameter | Description
------------- | -------------
-concurrent_users | The different number of concurrent users. This an array and the brackets are important.
-backend_sleep_time | The different backend sleep times in milliseconds. This is an array.
-message_size | The different number of message sizes (payloads) in Bytes. This is an array.
-api_host | The API Manager hostname or IP
-api_path | The path of the API to test
-api_ssh_host | The ssh host for the API Manager node
-backend_ssh_host | The ssh host for the node with Netty HTTP Echo Service
-test_duration | Duration of the test in seconds.
-warmup_time | The warmup time in minutes. This is used for JTL Splitter, which is from `performance-common`
-jmeter1_host | The hostname or IP of the JMeter Server 01
-jmeter2_host | The hostname or IP of the JMeter Server 02
-jmeter1_ssh_host | The ssh host for the JMeter Server 01
-jmeter2_ssh_host | The ssh host for the JMeter Server 02
-apim_heap_size | Heap Size in GBs
+Use `cloudformation/run-micro-gw-performance-tests.sh` to run performance tests on Micro-Gateway.
 
-After changing parameters, the performance tests can be started from the script in the JMeter Client node as shown in
- above diagram. It's recommended to run the tests in `nohup` mode.
+```console
+ubuntu@server:~$ ./cloudformation/run-micro-gw-performance-tests.sh -h
 
-For example:
+Usage: 
+./cloudformation/run-micro-gw-performance-tests.sh -f <performance_scripts_distribution> [-d <results_dir>] -k <key_file> -n <key_name>
+   -j <jmeter_distribution> -o <oracle_jdk_distribution> -g <gcviewer_jar_path>
+   -s <stack_name_prefix> -b <s3_bucket_name> -r <s3_bucket_region>
+   -J <jmeter_client_ec2_instance_type> -S <jmeter_server_ec2_instance_type>
+   -N <netty_ec2_instance_type> 
+   -a <wso2am_distribution> -c <wso2am_micro_gw_distribution> -A <wso2am_ec2_instance_type>
+   [-t <number_of_stacks>] [-p <parallel_parameter_option>] [-w <minimum_stack_creation_wait_time>]
+   [-h] -- [run_performance_tests_options]
 
-`nohup ./run-performance-test.sh > test.out 2>&1 &`
+-f: Distribution containing the scripts to run performance tests.
+-d: The results directory. Default value is a directory with current time. For example, results-20190124105955.
+-k: Amazon EC2 Key File. Amazon EC2 Key Name must match with this file name.
+-n: Amazon EC2 Key Name.
+-j: Apache JMeter (tgz) distribution.
+-o: Oracle JDK distribution.
+-g: Path of GCViewer Jar file, which will be used to analyze GC logs.
+-s: The Amazon CloudFormation Stack Name Prefix.
+-b: Amazon S3 Bucket Name.
+-r: Amazon S3 Bucket Region.
+-J: Amazon EC2 Instance Type for JMeter Client.
+-S: Amazon EC2 Instance Type for JMeter Server.
+-N: Amazon EC2 Instance Type for Netty (Backend) Service.
+-a: WSO2 API Manager Distribution.
+-c: WSO2 API Microgateway Distribution.
+-A: Amazon EC2 Instance Type for WSO2 API Manager.
+-t: Number of stacks to create. Default: 1.
+-p: Parameter option of the test script, which will be used to run tests in parallel.
+    Default: u. Allowed option characters: ubsm.
+-w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status.
+    Default: 5.
+-h: Display this help and exit.
+```
 
-The results of performance tests will be saved in `results` directory.
+## Running performance tests on other enviroments
 
-#### create-summary-csv.sh
-
-After the performance tests are completed, a summary CSV for all results can be created using this script file.
-
-The script expects the [GCViewer](https://github.com/chewiebug/GCViewer) jar file to analyze GC logs. The latest
- GCViewer JAR file can be downloaded from [Maven](http://repo1.maven.org/maven2/com/github/chewiebug/gcviewer/)
-
-The script must be run inside the results directory.
-
-How to run:
-
-`~/jmeter/create-summary-csv.sh /path/to/gcviewer*.jar`
-
-#### apimchart.py
-
-This is a common "Python" module used to generate charts. This is used by `create-charts.py` and
- `create-comparison-charts.py`
-
-The "Python" scripts uses following modules to visualize data.
-
-* pandas
-* matplotlib
-* seaborn
-
-The Python scripts are configured to run with Python 3.6. Installing `seaborn` module will install other required
- dependencies as well. Use following command to install `seaborn`
-
-`python3.6 -m pip install seaborn`
-
-#### create-charts.py
-
-Create charts from the summary.csv generated by `create-summary-csv.sh` script. This Python script must be run inside
- the results directory.
-
-#### create-comparison-charts.py
-
-Create charts to compare results from multiple summary.csv files. The script accepts the summary.csv files along with a
- name to identify the summary.csv file.
-
-For example:
-
-`create-comparison-charts.py results_echo_api/summary.csv "Echo API" results_mediation_api/summary.csv "Mediation API"`
-
-## Steps to run performance tests
+The scripts can also be used to run performance tests on environments other than AWS.
 
 Following are the high-level steps to run the performance tests.
 
-* Copy the `performance-apim` and `performance-common` packages to all servers.
+* Copy the `performance-apim` distribution to all servers.
 * Extract the packages in user home directory
-* Download latest Oracle JDK 8 to all servers.
-* Download latest Apache JMeter to all JMeter servers.
-* Download WSO2 API Manager product to APIM server.
-* Install Java in all servers using the `install-java.sh` script inside `java` directory.
-* Install 'System Activity Report' in all servers using the `install-sar.sh` script inside `sar` directory.
-* Install 'Apache JMeter' in all JMeter servers using the `install-jmeter.sh` script inside `jmeter` directory
-* Setup WSO2 API Manager in APIM server using `setup.sh` script.
-* Copy `tokens.csv` file, which is generated from `setup.sh` script, to the user home directory of all JMeter nodes.
-* Run the performance test using `run-performance-test.sh` script.
-* Use `create-summary-csv.sh` to generate a summary.csv file from the test results.
-* Use Python scripts (`create-charts.py` and `create-comparison-charts.py`) to generate charts from the summary results.
+* Use scripts in `setup` directory to setup each server.
+Note: `setup-common.sh` is a common script, which should not be executed directly.
+* Run the WSO2 API Manager Gateway performance tests using `jmeter/run-performance-test.sh` script in JMeter Client.
+* Run the Micro-Gateway performance tests using `jmeter/run-micro-gw-performance-tests.sh` script in JMeter Client.
+* Use `jmeter/create-summary-csv.sh` to generate a summary.csv file from the test results.
+* Use `jmeter/create-summary-markdown.py` to generate a summary report in markdown format.
 
 ## License
 
