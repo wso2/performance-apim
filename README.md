@@ -1,4 +1,4 @@
-# Artifacts for WSO2 API Manager Performance Tests
+# Artifacts for WSO2 API Manager and WSO2 API Microgateway Performance Tests
 
 ---
 |  Branch | Build Status |
@@ -157,9 +157,9 @@ Usage:
 -h: Display this help and exit.
 ```
 
-### Testing Micro-Gateway
+### Testing WSO2 API Microgateway
 
-Use `cloudformation/run-micro-gw-performance-tests.sh` to run performance tests on Micro-Gateway.
+Use `cloudformation/run-micro-gw-performance-tests.sh` to run performance tests on WSO2 API Microgateway.
 
 ```console
 ubuntu@server:~$ ./cloudformation/run-micro-gw-performance-tests.sh -h
@@ -209,7 +209,7 @@ Following are the high-level steps to run the performance tests.
 * Use scripts in `setup` directory to setup each server.
 Note: `setup-common.sh` is a common script, which should not be executed directly.
 * Run the WSO2 API Manager Gateway performance tests using `jmeter/run-performance-test.sh` script in JMeter Client.
-* Run the Micro-Gateway performance tests using `jmeter/run-micro-gw-performance-tests.sh` script in JMeter Client.
+* Run the WSO2 API Microgateway performance tests using `jmeter/run-micro-gw-performance-tests.sh` script in JMeter Client.
 * Use `jmeter/create-summary-csv.sh` to generate a summary.csv file from the test results.
 * Use `jmeter/create-summary-markdown.py` to generate a summary report in markdown format.
 
