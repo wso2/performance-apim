@@ -149,10 +149,10 @@ function setup() {
     #start Micro-GW
     sudo -u $os_user ./apim/micro-gw/micro-gw-start.sh -m 512m -n echo-mgw
 
-    sudo -u $os_user ./apim/micro-gw/generate-jwt-tokens.sh 1000
+    sudo -u $os_user ./apim/micro-gw/generate-jwt-tokens.sh -t 1000
 
     popd
-    echo "Completed API Manager setup..."
+    echo "Completed API Manager Micro-Gateway setup..."
 }
 export -f setup
 

@@ -32,7 +32,7 @@
             <outputDirectory>.</outputDirectory>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>jwt-generator</outputDirectory>
+            <outputDirectory>apim/micro-gw</outputDirectory>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
             <includes>
@@ -51,7 +51,7 @@
     <files>
         <file>
             <source>../components/jwt-generator/wso2carbon.jks</source>
-            <outputDirectory>.</outputDirectory>
+            <outputDirectory>apim/micro-gw</outputDirectory>
             <destName>wso2carbon.jks</destName>
         </file>
     </files>
