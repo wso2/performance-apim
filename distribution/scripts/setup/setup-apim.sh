@@ -155,8 +155,9 @@ function setup() {
 
     #Extract the downloaded zip
     echo "Extracting WSO2 API Manager"
+    apim_dirname=$(unzip -Z -1 $apim_product | head -1 | sed -e 's@/.*@@')
     sudo -u $os_user unzip -q -o $apim_product
-    sudo -u $os_user mv wso2am-* wso2am
+    sudo -u $os_user mv -v $apim_dirname wso2am
     echo "API Manager is extracted"
 
     # Configure WSO2 API Manager
