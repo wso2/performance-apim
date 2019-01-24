@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2019 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,20 +28,34 @@ function initialize() {
     export apim_host=$(get_ssh_hostname $apim_ssh_host)
     echo "Downloading tokens to $HOME."
     scp $apim_ssh_host:apim/micro-gw/target/jwt-tokens.csv $HOME/
-
+    scp $apim_ssh_host:apim/target/tokens.csv $HOME/
     if [[ $jmeter_servers -gt 1 ]]; then
         for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
             echo "Copying tokens to $jmeter_ssh_host"
             scp $HOME/jwt-tokens.csv $jmeter_ssh_host:
+            scp $HOME/tokens.csv $jmeter_ssh_host:
         done
     fi
 }
 export -f initialize
 
 declare -A test_scenario0=(
-    [name]="microgw-passthrough"
-    [display_name]="Microgateway - Passthrough"
-    [description]="A secured API, which directly invokes the backend through Microgateway"
+    [name]="microgw-passthrough-oauth2"
+    [display_name]="Microgateway-Passthrough-OAuth2"
+    [description]="A secured API, which directly invokes the backend through Microgateway using OAuth2 tokens"
+    [jmx]="apim-test.jmx"
+    [protocol]="https"
+    [path]="/echo/1.0.0"
+    [port]="9095"
+    [use_backend]=true
+    [tokens]="$HOME/tokens.csv"
+    [skip]=false
+)
+
+declare -A test_scenario1=(
+    [name]="microgw-passthrough-jwt"
+    [display_name]="Microgateway-Passthrough-JWT"
+    [description]="A secured API, which directly invokes the backend through Microgateway using JWT tokens"
     [jmx]="apim-test.jmx"
     [protocol]="https"
     [path]="/echo/1.0.0"

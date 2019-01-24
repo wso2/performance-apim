@@ -29,26 +29,34 @@ fi
 export script_name="$0"
 export script_dir=$(dirname "$0")
 export netty_host=""
+export mysql_host=""
+export mysql_user=""
+export mysql_password=""
+export mysql_connector_file=""
 export apim_product=""
+export micro_gw_product=""
 export oracle_jdk_dist=""
-export micro_gw_dist=""
 export os_user=""
 
 function usageCommand() {
-    echo "-j <oracle_jdk_dist> -a <apim_product> -m <micro-gw> -n <netty_host> -u <os_user>"
+    echo "-j <oracle_jdk_dist> -a <apim_product> -k <micro_gw_product> -c <mysql_connector_file> -n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -b <os_user>"
 }
 export -f usageCommand
 
 function usageHelp() {
     echo "-j: Oracle JDK distribution."
     echo "-a: WSO2 API Manager distribution."
-    echo "-m: WSO2 API Manager Micro-GW Distribution."
+    echo "-k: WSO2 API Microgateway distribution."
+    echo "-c: MySQL Connector JAR file."
     echo "-n: The hostname of Netty service."
-    echo "-u: General user of the OS."
+    echo "-m: The hostname of MySQL service."
+    echo "-u: MySQL Username."
+    echo "-p: MySQL Password."
+    echo "-b: General user of the OS."
 }
 export -f usageHelp
 
-while getopts "gp:w:o:hj:a:m:n:u:" opt; do
+while getopts "gp:w:o:hj:a:k:c:n:m:u:p:b:" opt; do
     case "${opt}" in
     j)
         oracle_jdk_dist=${OPTARG}
@@ -56,13 +64,25 @@ while getopts "gp:w:o:hj:a:m:n:u:" opt; do
     a)
         apim_product=${OPTARG}
         ;;
-    m)
-        micro_gw_dist=${OPTARG}
+    k)
+        micro_gw_product=${OPTARG}
+        ;;
+    c)
+        mysql_connector_file=${OPTARG}
         ;;
     n)
         netty_host=${OPTARG}
         ;;
+    m)
+        mysql_host=${OPTARG}
+        ;;
     u)
+        mysql_user=${OPTARG}
+        ;;
+    p)
+        mysql_password=${OPTARG}
+        ;;
+    b)
         os_user=${OPTARG}
         ;;
     *)
@@ -79,15 +99,31 @@ function validate() {
         exit 1
     fi
     if [[ -z $apim_product ]]; then
-        echo "Please provide the WSO2 API Manager Distribution"
+        echo "Please provide the WSO2 API Manager Distribution."
         exit 1
     fi
-    if [[ -z $micro_gw_dist ]]; then
-        echo "Please provide the WSO2 API Manager Micro Gateway Distribution"
+    if [[ -z $micro_gw_product ]]; then
+        echo "Please provide the API Microgateway Distribution."
+        exit 1
+    fi
+    if [[ ! -f $mysql_connector_file ]]; then
+        echo "Please provide the MySQL connector file."
         exit 1
     fi
     if [[ -z $netty_host ]]; then
         echo "Please provide the hostname of Netty Service."
+        exit 1
+    fi
+    if [[ -z $mysql_host ]]; then
+        echo "Please provide the hostname of MySQL host."
+        exit 1
+    fi
+    if [[ -z $mysql_user ]]; then
+        echo "Please provide the MySQL username."
+        exit 1
+    fi
+    if [[ -z $mysql_password ]]; then
+        echo "Please provide the MySQL password."
         exit 1
     fi
     if [[ -z $os_user ]]; then
@@ -100,7 +136,7 @@ export -f validate
 
 function setup() {
     install_dir=/home/$os_user
-    $script_dir/../java/install-java.sh -f $oracle_jdk_dist
+    $script_dir/../java/install-java.sh -f $oracle_jdk_dist -u $os_user
 
     pushd ${install_dir}
 
@@ -116,6 +152,9 @@ function setup() {
     sudo -u $os_user mv -v $apim_dirname wso2am
     echo "API Manager is extracted"
 
+    # Configure WSO2 API Manager
+    sudo -u $os_user $script_dir/../apim/configure.sh -m $mysql_host -u $mysql_user -p $mysql_password -c $mysql_connector_file
+
     # Start API Manager
     sudo -u $os_user $script_dir/../apim/apim-start.sh -m 1G
 
@@ -124,8 +163,8 @@ function setup() {
 
     #Extract the Micro-gw zip
     echo "Extracting WSO2 API Manager Micro Gateway"
-    mgw_dirname=$(unzip -Z -1 $micro_gw_dist | head -1 | sed -e 's@/.*@@')
-    sudo -u $os_user unzip -q -o $micro_gw_dist
+    mgw_dirname=$(unzip -Z -1 $micro_gw_product | head -1 | sed -e 's@/.*@@')
+    sudo -u $os_user unzip -q -o $micro_gw_product
     sudo -u $os_user mv -v $mgw_dirname micro-gw
     echo "Micro Gateway is extracted"
 
@@ -149,11 +188,25 @@ function setup() {
     #start Micro-GW
     sudo -u $os_user ./apim/micro-gw/micro-gw-start.sh -m 512m -n echo-mgw
 
+    #Generate jwt-tokens
     sudo -u $os_user ./apim/micro-gw/generate-jwt-tokens.sh -t 1000
 
+    # Generate oauth2 access tokens
+    tokens_sql="$script_dir/../apim/target/tokens.sql"
+    if [[ ! -f $tokens_sql ]]; then
+        sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
+    fi
+
+    if [[ -f $tokens_sql ]]; then
+        mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+    else
+        echo "SQL file with generated tokens not found."
+        exit 1
+    fi
+
     popd
-    echo "Completed API Manager Micro-Gateway setup..."
+    echo "Completed API Micro-Gateway setup..."
 }
 export -f setup
 
-$script_dir/setup-common.sh "${opts[@]}" "$@" -p curl -p jq -p unzip -p expect
+$script_dir/setup-common.sh "${opts[@]}" "$@" -p curl -p jq -p unzip -p expect -p mysql-client
