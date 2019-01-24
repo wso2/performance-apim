@@ -1,4 +1,4 @@
-# WSO2 API Manager Performance Test Results
+# {{ parameters.application_name }} Performance Test Results
 
 During each release, we execute various automated performance test scenarios and publish the results.
 
@@ -20,7 +20,7 @@ delays.
 
 The main performance metrics:
 
-1. **Throughput**: The number of requests that the WSO2 API Manager processes during a specific time interval (e.g. per second).
+1. **Throughput**: The number of requests that the {{ parameters.application_name }} processes during a specific time interval (e.g. per second).
 2. **Response Time**: The end-to-end latency for an operation of invoking an API. The complete distribution of response times was recorded.
 
 In addition to the above metrics, we measure the load average and several memory-related metrics.
@@ -38,7 +38,7 @@ The following are the test parameters.
 The duration of each test is **{{ parameters.test_duration }} seconds**. The warm-up period is **{{ parameters.warmup_time }} seconds**.
 The measurement results are collected after the warm-up period.
 
-A [**{{ parameters.wso2am_ec2_instance_type }}** Amazon EC2 instance](https://aws.amazon.com/ec2/instance-types/) was used to install WSO2 API Manager.
+A [**{{ parameters.wso2am_ec2_instance_type }}** Amazon EC2 instance](https://aws.amazon.com/ec2/instance-types/) was used to install {{ parameters.application_name }}.
 
 The following are the measurements collected from each performance test conducted for a given combination of
 test parameters.

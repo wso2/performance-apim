@@ -27,6 +27,10 @@ export mysql_connector_jar=""
 export wso2am_ec2_instance_type=""
 export wso2am_rds_db_instance_class=""
 
+export aws_cloudformation_template_filename="apim_perf_test_cfn.yaml"
+export application_name="WSO2 API Manager"
+export metrics_file_prefix="apim"
+
 function usageCommand() {
     echo "-a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class>"
 }
@@ -109,6 +113,7 @@ function create_links() {
 export -f create_links
 
 function get_test_metadata() {
+    echo "application_name=$application_name"
     echo "wso2am_ec2_instance_type=$wso2am_ec2_instance_type"
     echo "wso2am_rds_db_instance_class=$wso2am_rds_db_instance_class"
 }
@@ -139,9 +144,5 @@ function get_columns() {
     echo "Average WSO2 API Manager Memory Footprint After Full GC (M)"
 }
 export -f get_columns
-
-export aws_cloudformation_template_filename="apim_perf_test_cfn.yaml"
-export application_name="WSO2 API Manager"
-export metrics_file_prefix="apim"
 
 $script_dir/cloudformation-common.sh "${opts[@]}" -- "$@"

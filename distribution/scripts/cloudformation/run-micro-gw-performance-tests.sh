@@ -26,6 +26,11 @@ export wso2am_distribution=""
 export wso2am_micro_gw_distribution=""
 export wso2am_ec2_instance_type=""
 
+export aws_cloudformation_template_filename="apim_micro_gw_perf_test_cfn.yaml"
+export application_name="WSO2 API Microgateway"
+export metrics_file_prefix="microgateway"
+export run_performance_tests_script_name="run-micro-gw-performance-tests.sh"
+
 function usageCommand() {
     echo "-a <wso2am_distribution> -c <wso2am_micro_gw_distribution> -A <wso2am_ec2_instance_type>"
 }
@@ -98,6 +103,7 @@ function create_links() {
 export -f create_links
 
 function get_test_metadata() {
+    echo "application_name=$application_name"
     echo "wso2am_ec2_instance_type=$wso2am_ec2_instance_type"
 }
 export -f get_test_metadata
@@ -124,10 +130,5 @@ function get_columns() {
     echo "Average WSO2 API Microgateway Memory Footprint After Full GC (M)"
 }
 export -f get_columns
-
-export aws_cloudformation_template_filename="apim_micro_gw_perf_test_cfn.yaml"
-export application_name="WSO2 API Microgateway"
-export metrics_file_prefix="microgateway"
-export run_performance_tests_script_name="run-micro-gw-performance-tests.sh"
 
 $script_dir/cloudformation-common.sh "${opts[@]}" -- "$@"
