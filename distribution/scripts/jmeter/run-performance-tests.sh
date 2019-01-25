@@ -48,8 +48,8 @@ declare -A test_scenario0=(
     [skip]=false
 )
 declare -A test_scenario1=(
-    [name]="mediation"
-    [display_name]="Mediation"
+    [name]="transformation"
+    [display_name]="Transformation"
     [description]="A secured API, which has a mediation extension to modify the message."
     [jmx]="apim-test.jmx"
     [protocol]="https"
