@@ -21,6 +21,26 @@
         <format>tar.gz</format>
     </formats>
 
+    <dependencySets>
+        <dependencySet>
+            <includes>
+                <include>org.wso2.performance.common:performance-common-distribution:tar.gz</include>
+            </includes>
+            <useStrictFiltering>true</useStrictFiltering>
+            <useProjectArtifact>false</useProjectArtifact>
+            <unpack>true</unpack>
+            <outputDirectory>.</outputDirectory>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>apim/micro-gw</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <includes>
+                <include>org.wso2.performance.apim:jwt-generator</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+    
     <fileSets>
         <fileSet>
             <directory>scripts</directory>
@@ -28,5 +48,12 @@
             <filtered>true</filtered>
         </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>../components/jwt-generator/wso2carbon.jks</source>
+            <outputDirectory>apim/micro-gw</outputDirectory>
+            <destName>wso2carbon.jks</destName>
+        </file>
+    </files>
 
 </assembly>

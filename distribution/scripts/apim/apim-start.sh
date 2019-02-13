@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2017 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +17,38 @@
 # Start WSO2 API Manager
 # ----------------------------------------------------------------------------
 
-heap_size=$1
+default_heap_size="2G"
+heap_size="$default_heap_size"
+
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 [-m <heap_size>] [-h]"
+    echo "-m: The heap memory size of API Manager. Default: $default_heap_size."
+    echo "-h: Display this help and exit."
+    echo ""
+}
+
+while getopts "m:h" opt; do
+    case "${opt}" in
+    m)
+        heap_size=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
 if [[ -z $heap_size ]]; then
-    heap_size="4"
+    echo "Please provide the heap size for the API Manager."
+    exit 1
 fi
 
 jvm_dir=""
@@ -28,54 +57,54 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
-apim_version=2.1.0
 carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 
-if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
+if pgrep -f "$carbon_bootstrap_class" >/dev/null; then
     echo "Shutting down APIM"
-    $HOME/wso2am-${apim_version}/bin/wso2server.sh stop
+    wso2am/bin/wso2server.sh stop
+
+    echo "Waiting for API Manager to stop"
+    while true; do
+        if ! pgrep -f "$carbon_bootstrap_class" >/dev/null; then
+            echo "API Manager stopped"
+            break
+        else
+            sleep 10
+        fi
+    done
 fi
 
-echo "Waiting for API Manager to stop"
-
-while true
-do
-    if ! pgrep -f "$carbon_bootstrap_class" > /dev/null; then
-        echo "API Manager stopped"
-        break
-    else
-        sleep 10
-    fi
-done
-
-log_files=($HOME/wso2am-${apim_version}/repository/logs/*)
+log_files=(wso2am/repository/logs/*)
 if [ ${#log_files[@]} -gt 1 ]; then
     echo "Log files exists. Moving to /tmp"
-    mv $HOME/wso2am-${apim_version}/repository/logs/* /tmp/;
+    mv "${log_files[@]}" /tmp/
 fi
 
-echo "Setting Heap to ${heap_size}GB"
-export JVM_MEM_OPTS="-Xms${heap_size}G -Xmx${heap_size}G"
+echo "Setting Heap to ${heap_size}"
+export JVM_MEM_OPTS="-Xms${heap_size} -Xmx${heap_size}"
 
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HOME/wso2am-${apim_version}/repository/logs/gc.log"
+export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/wso2am/repository/logs/gc.log"
 
 echo "Starting APIM"
-$HOME/wso2am-${apim_version}/bin/wso2server.sh start
+wso2am/bin/wso2server.sh start
 
 echo "Waiting for API Manager to start"
 
-while true 
-do
-    # Check Version service
-    response_code="$(curl -sk -w "%{http_code}" -o /dev/null https://localhost:8243/services/Version)"
+exit_status=100
+
+n=0
+until [ $n -ge 60 ]; do
+    response_code="$(curl -sk -w "%{http_code}" -o /dev/null https://localhost:8243/services/Version || echo "")"
     if [ $response_code -eq 200 ]; then
         echo "API Manager started"
+        exit_status=0
         break
-    else
-        sleep 10
     fi
+    sleep 10
+    n=$(($n + 1))
 done
 
 # Wait for another 10 seconds to make sure that the server is ready to accept API requests.
 sleep 10
+exit $exit_status

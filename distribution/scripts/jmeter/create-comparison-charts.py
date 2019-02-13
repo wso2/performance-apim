@@ -16,10 +16,9 @@
 # ----------------------------------------------------------------------------
 # Create comparison charts from two summary.csv files
 # ----------------------------------------------------------------------------
-import sys
-
 import pandas as pd
 import seaborn as sns
+import sys
 
 import apimchart
 
@@ -88,7 +87,7 @@ def read_summary_csv_files():
         print("Reading " + summary_files[i] + " with name " + names[i] + " to merge and append")
         df_read = pd.read_csv(summary_files[i])
         # Filter errors
-        df_read = df_read.loc[df_merge['Error Count'] < 100]
+        df_read = df_read.loc[df_read['Error Count'] < 100]
         if i == summary_count - 1:
             # Add suffixes to new right columns. Add suffixes to left columns using the first summary name
             suffixes = [add_suffix('', names[0]), add_suffix('', names[i])]

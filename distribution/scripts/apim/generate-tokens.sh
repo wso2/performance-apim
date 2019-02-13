@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 # Copyright 2017 WSO2 Inc. (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,39 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
-tokens_count=$1
+tokens_count=""
 
-validate() {
-    if [[ -z  $1  ]]; then
-        echo "Please provide arguments. Example: $0 tokens_count"
-        exit 1
-    fi
+function usage() {
+    echo ""
+    echo "Usage: "
+    echo "$0 -t <tokens_count>"
+    echo ""
+    echo "-t: Count of the Tokens."
+    echo "-h: Display this help and exit."
+    echo ""
 }
 
-validate $tokens_count
+while getopts "t:h" opt; do
+    case "${opt}" in
+    t)
+        tokens_count=${OPTARG}
+        ;;
+    h)
+        usage
+        exit 0
+        ;;
+    \?)
+        usage
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+if [[ -z $tokens_count ]]; then
+    echo "Please provide the Token count"
+    exit 1
+fi
 
 consumer_key_file="$script_dir/target/consumer_key"
 
@@ -57,27 +80,33 @@ if [[ -f $sql_file ]]; then
     mv $sql_file /tmp
 fi
 
-echo "Genearating Tokens.........."
+echo "Generating Tokens.........."
 
-for (( c=1; c <= $tokens_count; c++ ))
-do
+for ((c = 1; c <= $tokens_count; c++)); do
     TOKEN_ID="$(get_random_string 36)"
     ACCESS_TOKEN_KEY="$(get_random_string 36)"
     REFRESH_TOKEN_KEY="$(get_random_string 36)"
     TOKEN_SCOPE_HASH="$(get_random_string 32)"
+    ACCESS_TOKEN_HASH=$(echo -n $ACCESS_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
+    REFRESH_TOKEN_HASH==$(echo -n $REFRESH_TOKEN_KEY | shasum -a 256 | cut -d " " -f 1)
+    ACCESS_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}"
+    REFRESH_TOKEN_HASH_JSON="{\"hash\":\"$ACCESS_TOKEN_HASH\",\"algorithm\":\"SHA-256\"}"
+
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "INSERT INTO IDN_OAUTH2_ACCESS_TOKEN (TOKEN_ID, ACCESS_TOKEN, REFRESH_TOKEN, CONSUMER_KEY_ID, AUTHZ_USER, \
         TENANT_ID, USER_DOMAIN, TIME_CREATED, REFRESH_TOKEN_TIME_CREATED, VALIDITY_PERIOD, \
-        REFRESH_TOKEN_VALIDITY_PERIOD, TOKEN_SCOPE_HASH, TOKEN_STATE, USER_TYPE, GRANT_TYPE, SUBJECT_IDENTIFIER) \
+        REFRESH_TOKEN_VALIDITY_PERIOD, TOKEN_SCOPE_HASH, TOKEN_STATE, USER_TYPE, GRANT_TYPE, SUBJECT_IDENTIFIER, \
+        ACCESS_TOKEN_HASH,REFRESH_TOKEN_HASH) \
         SELECT '$TOKEN_ID','$ACCESS_TOKEN_KEY','$REFRESH_TOKEN_KEY',ID,'admin',-1234,'PRIMARY', \
         '$NOW','$NOW',99999999000,99999999000,'$TOKEN_SCOPE_HASH', \
-        'ACTIVE','APPLICATION_USER','password','admin@carbon.super' \
-        FROM IDN_OAUTH_CONSUMER_APPS WHERE CONSUMER_KEY='$consumer_key';" >> $sql_file
+        'ACTIVE','APPLICATION_USER','password','admin@carbon.super','$ACCESS_TOKEN_HASH_JSON', \
+        '$REFRESH_TOKEN_HASH_JSON' \
+        FROM IDN_OAUTH_CONSUMER_APPS WHERE CONSUMER_KEY='$consumer_key';" >>$sql_file
     echo INSERT INTO "IDN_OAUTH2_ACCESS_TOKEN_SCOPE (TOKEN_ID, TOKEN_SCOPE, TENANT_ID) \
-        VALUES ('$TOKEN_ID','default',-1234);" >> $sql_file
-    echo $ACCESS_TOKEN_KEY >> $tokens_file
+        VALUES ('$TOKEN_ID','default',-1234);" >>$sql_file
+    echo $ACCESS_TOKEN_KEY >>$tokens_file
     echo -ne "Generated Tokens Count: ${c}\r"
 done
-echo "COMMIT;" >> $sql_file
+echo "COMMIT;" >>$sql_file
 
 echo "Token Generation Completed.........."
