@@ -353,22 +353,31 @@ create_api() {
             echo -ne "\n"
             return
         fi
-
-        #Get API
-        local api_details=$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}")
-        #Update API with sequence
         echo "Updating $api_name API to set mediation policy..."
-        api_details=$(echo $api_details | jq -r '.sequences |= [{"name":"mediation-api-sequence","type":"out"}]')
-
+        local api_details=""
         n=0
-        until [ $n -ge 20 ]; do
-            updated_api_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}" | jq -r '.id')
+        until [ $n -ge 50 ]; do
+            sleep 10
+            #Get API
+            api_details="$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}" || echo "")"
+            if [ -n "$api_details" ]; then
+                # Update API with sequence
+                echo "Updating $api_name API to set mediation policy..."
+                api_details=$(echo "$api_details" | jq -r '.sequences |= [{"name":"mediation-api-sequence","type":"out"}]')
+                break
+            fi
+            n=$(($n + 1))
+        done
+        n=0
+        until [ $n -ge 50 ]; do
+            sleep 10
+            local updated_api="$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v0.14/apis/${api_id}")"
+            local updated_api_id=$(echo "$updated_api" | jq -r '.id')
             if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
                 echo "Mediation policy is set to $api_name API with ID $updated_api_id"
                 break
             fi
             n=$(($n + 1))
-            sleep 5
         done
         if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
             echo "Failed to set mediation policy to $api_name API"
