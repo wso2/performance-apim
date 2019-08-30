@@ -29,7 +29,9 @@ export wso2am_rds_db_instance_class=""
 
 export aws_cloudformation_template_filename="apim_perf_test_cfn.yaml"
 export application_name="WSO2 API Manager"
+export ec2_instance_name="wso2am"
 export metrics_file_prefix="apim"
+export run_performance_tests_script_name="run-performance-tests.sh"
 
 function usageCommand() {
     echo "-a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class>"
@@ -45,7 +47,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts ":f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:ha:c:A:D:" opt; do
+while getopts ":u:f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:ha:c:A:D:" opt; do
     case "${opt}" in
     a)
         wso2am_distribution=${OPTARG}
