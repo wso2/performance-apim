@@ -68,7 +68,7 @@ fi
 
 consumer_key=$(cat $consumer_key_file)
 
-application_id_file="$script_dir/target/consumer_key"
+application_id_file="$script_dir/target/application_id"
 
 if [[ ! -f $application_id_file ]]; then
     echo "Couldn't find application_id file in target"
