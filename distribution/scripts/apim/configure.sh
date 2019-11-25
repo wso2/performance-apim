@@ -101,8 +101,8 @@ if [[ ! -f $mysql_connector_file ]]; then
 fi
 
 #copy db scripts from api manager to /tmp directory
-cp wso2am/dbscripts/apimgt/mysql5.7.sql /tmp/apimgt-mysql5.7.sql
-cp wso2am/dbscripts/mysql5.7.sql /tmp/mysql5.7.sql
+cp wso2am/dbscripts/apimgt/mysql.sql /tmp/apimgt-mysql.sql
+cp wso2am/dbscripts/mysql.sql /tmp/mysql.sql
 
 # Execute Queries
 echo "Creating Databases. Please make sure MySQL server 5.7 is installed"
