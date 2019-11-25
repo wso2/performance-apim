@@ -36,8 +36,9 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Signature;
+import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -60,6 +61,9 @@ public class JWTGenerator {
 
     @Parameter(names = "--app-name", description = "Application Name", required = true)
     private String appName;
+    
+    @Parameter(names = "--app-owner", description = "Application Owner", required = true)
+    private String appOwner;
 
     @Parameter(names = "--app-tier", description = "Application Tier", required = true)
     private String appTier;
@@ -67,9 +71,15 @@ public class JWTGenerator {
     @Parameter(names = "--subs-tier", description = "Subscription Tier", required = true)
     private String subsTier;
 
-    @Parameter(names = "--app-id", description = "Application ID", required = true)
+    @Parameter(names = "--app-id", description = "Application ID", required = false)
     private int appId;
+    
+    @Parameter(names = "--app-uuid", description = "Application UUID", required = false)
+    private String appUUId;
 
+    @Parameter(names = "--consumer-key", description = "Consumer key", required = true)
+    private String consumerKey;
+    
     @Parameter(names = {"--key-store-file"}, description = "Key Store File", required = true,
             validateValueWith = KeyStoreFileValidator.class)
     private File keyStoreFile;
@@ -113,19 +123,38 @@ public class JWTGenerator {
         application.setName(appName);
         application.setTier(appTier);
         application.setId(appId);
+        application.setUuid(appUUId);
+        application.setOwner(appOwner);
 
-        SubscribedApiDTO subscribedApiDTO = new SubscribedApiDTO();
-        subscribedApiDTO.setContext("/" + context + "/" + version);
-        subscribedApiDTO.setName(apiName);
-        subscribedApiDTO.setVersion(version);
-        subscribedApiDTO.setPublisher("admin");
-        subscribedApiDTO.setSubscriptionTier(subsTier);
-        subscribedApiDTO.setSubscriberTenantDomain("carbon.super");
+        List<SubscribedApiDTO> subscribedList = new ArrayList<SubscribedApiDTO>();
+        
+        String[] apiNameList = apiName.split(",");
+        String[] contextList = context.split(",");
+        String[] versionList = version.split(",");
+        
+        for (int i = 0; i < apiNameList.length; i++) {
+            SubscribedApiDTO subscribedApiDTO = new SubscribedApiDTO();
+            subscribedApiDTO.setContext("/" + contextList[i] + "/" + versionList[i]);
+            subscribedApiDTO.setName(apiNameList[i]);
+            subscribedApiDTO.setVersion(versionList[i]);
+            subscribedApiDTO.setPublisher("admin");
+            subscribedApiDTO.setSubscriptionTier(subsTier);
+            subscribedApiDTO.setSubscriberTenantDomain("carbon.super");
+            subscribedList.add(subscribedApiDTO);
+        }
 
         JSONObject head = new JSONObject();
         head.put("typ", "JWT");
         head.put("alg", "RS256");
         head.put("x5t", "UB_BQy2HFV3EMTgq64Q-1VitYbE");
+
+        JSONObject tierInfoElement = new JSONObject();
+        tierInfoElement.put("stopOnQuotaReach", true);
+        tierInfoElement.put("spikeArrestLimit", 0);
+        tierInfoElement.put("spikeArrestUnit", "s");
+        JSONObject tierInfo = new JSONObject();
+        tierInfo.put(subsTier, tierInfoElement);
+        
         String header = head.toString();
 
         String base64UrlEncodedHeader = Base64.getUrlEncoder()
@@ -151,11 +180,13 @@ public class JWTGenerator {
                 jwtTokenInfo.put("scope", "am_application_scope default");
                 jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
                 jwtTokenInfo.put("keytype", "PRODUCTION");
-                jwtTokenInfo.put("subscribedAPIs", new JSONArray(Collections.singletonList(subscribedApiDTO)));
+                jwtTokenInfo.put("subscribedAPIs", new JSONArray(subscribedList));
                 jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                         + VALIDITY_PERIOD);
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
+                jwtTokenInfo.put("consumerKey", consumerKey);
+                jwtTokenInfo.put("tierInfo", tierInfo);
 
                 String payload = jwtTokenInfo.toString();
                 String base64UrlEncodedBody = Base64.getUrlEncoder()
