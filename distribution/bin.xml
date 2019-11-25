@@ -54,6 +54,11 @@
             <outputDirectory>apim/micro-gw</outputDirectory>
             <destName>wso2carbon.jks</destName>
         </file>
+        <file>
+            <source>scripts/apim/jwt/wso2carbon.jks</source>
+            <outputDirectory>apim/jwt</outputDirectory>
+            <destName>wso2carbon.jks</destName>
+        </file>
     </files>
 
 </assembly>
