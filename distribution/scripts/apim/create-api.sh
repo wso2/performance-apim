@@ -25,7 +25,7 @@ backend_endpoint_url=""
 default_backend_endpoint_type="http"
 backend_endpoint_type="$default_backend_endpoint_type"
 out_sequence=""
-token_type="JWT"
+token_type="OAUTH"
 
 function usage() {
     echo ""
