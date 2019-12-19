@@ -36,7 +36,7 @@ export mysql_connector_file=""
 export apim_product=""
 export oracle_jdk_dist=""
 export os_user=""
-export token_type="OAUTH"
+export token_type="JWT"
 
 function usageCommand() {
     echo "-j <oracle_jdk_dist> -a <apim_product> -c <mysql_connector_file> -n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -o <os_user> -t <token_type>"
