@@ -26,6 +26,8 @@ public class ApplicationDTO {
     private int id;
     private String name;
     private String tier;
+    private String owner;
+    private String uuid;
 
     public int getId() {
         return id;
@@ -49,5 +51,21 @@ public class ApplicationDTO {
 
     public void setTier(String tier) {
         this.tier = tier;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

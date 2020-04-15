@@ -1,0 +1,11 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="mediation-api-sequence">
+    <payloadFactory media-type="json">
+        <format>
+            {"payload":"$1","size":"$2"}
+        </format>
+        <args>
+            <arg expression="$.payload" evaluator="json"></arg>
+            <arg expression="$.size" evaluator="json"></arg>
+        </args>
+    </payloadFactory>
+</sequence>

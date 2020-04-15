@@ -36,9 +36,10 @@ export mysql_connector_file=""
 export apim_product=""
 export oracle_jdk_dist=""
 export os_user=""
+export token_type="JWT"
 
 function usageCommand() {
-    echo "-j <oracle_jdk_dist> -a <apim_product> -c <mysql_connector_file> -n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -o <os_user>"
+    echo "-j <oracle_jdk_dist> -a <apim_product> -c <mysql_connector_file> -n <netty_host> -m <mysql_host> -u <mysql_username> -p <mysql_password> -o <os_user> -t <token_type>"
 }
 export -f usageCommand
 
@@ -51,10 +52,11 @@ function usageHelp() {
     echo "-u: MySQL Username."
     echo "-p: MySQL Password."
     echo "-o: General user of the OS."
+    echo "-t: Token type. Either JWT or OAUTH. Default is OAUTH."
 }
 export -f usageHelp
 
-while getopts "gp:w:o:hj:a:c:n:m:u:p:o:" opt; do
+while getopts "gp:w:o:hj:a:c:n:m:u:p:o:t:" opt; do
     case "${opt}" in
     j)
         oracle_jdk_dist=${OPTARG}
@@ -79,6 +81,9 @@ while getopts "gp:w:o:hj:a:c:n:m:u:p:o:" opt; do
         ;;
     o)
         os_user=${OPTARG}
+        ;;
+    t)
+        token_type=${OPTARG}
         ;;
     *)
         opts+=("-${opt}")
@@ -167,21 +172,29 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/apim-start.sh -m 1G
 
     # Create APIs in Local API Manager
-    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "echo" -d "Echo API" -b "http://${netty_host}:8688/"
+    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "echo" -d "Echo API" -b "http://${netty_host}:8688/" -k $token_type
     sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "mediation" -d "Mediation API" -b "http://${netty_host}:8688/" \
-        -o "$(mediation_out_sequence | tr -d "\n\r")"
+        -o "$(mediation_out_sequence | tr -d "\n\r")" -k $token_type
 
-    # Generate tokens
-    tokens_sql="$script_dir/../apim/target/tokens.sql"
-    if [[ ! -f $tokens_sql ]]; then
-        sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
-    fi
-
-    if [[ -f $tokens_sql ]]; then
-        mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+    if [ "$token_type" == "JWT" ]; then
+        tokens_csv="$script_dir/../apim/target/tokens.csv"
+        if [[ -f $tokens_csv ]]; then
+            sudo -u $os_user rm tokens_csv
+        fi
+        sudo -u $os_user $script_dir/../apim/generate-jwt-tokens.sh -t 4000
     else
-        echo "SQL file with generated tokens not found."
-        exit 1
+        # Generate tokens
+        tokens_sql="$script_dir/../apim/target/tokens.sql"
+        if [[ ! -f $tokens_sql ]]; then
+            sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
+        fi
+
+        if [[ -f $tokens_sql ]]; then
+            mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+        else
+            echo "SQL file with generated tokens not found."
+            exit 1
+        fi
     fi
 
     popd
