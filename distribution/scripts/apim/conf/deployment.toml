@@ -12,6 +12,13 @@ username = "admin"
 password = "admin"
 create_admin_account = true
 
+#[apim.throttling]
+#receiver_url="tcp://127.0.0.1:${receiver.url.port}"
+#receiver_auth_url="ssl://127.0.0.1:${auth.url.port}"
+
+#[apim.throttling.jms]
+#topic_connection_factory="amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://127.0.0.1:${jms.port}'"
+
 [user_store]
 type = "database"
 

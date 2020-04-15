@@ -124,5 +124,6 @@ apim_path="${dir}"
 
 if [[ -d $apim_path ]]; then
     cp -rv $temp_conf/conf ${apim_path}/repository/
+    #cp -rv $temp_conf/conf/velocity_template.xml ${apim_path}/repository/resources/api_templates
     cp -v $mysql_connector_file ${apim_path}/repository/components/lib/
 fi
