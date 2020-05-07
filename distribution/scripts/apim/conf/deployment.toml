@@ -12,15 +12,8 @@ username = "admin"
 password = "admin"
 create_admin_account = true
 
-#[apim.throttling]
-#receiver_url="tcp://127.0.0.1:${receiver.url.port}"
-#receiver_auth_url="ssl://127.0.0.1:${auth.url.port}"
-
-#[apim.throttling.jms]
-#topic_connection_factory="amqp://${admin.username}:${admin.password}@clientid/carbon?brokerlist='tcp://127.0.0.1:${jms.port}'"
-
 [user_store]
-type = "database"
+type = "database_unique_id"
 
 [database.apim_db]
 type = "mysql"
@@ -33,15 +26,6 @@ type = "mysql"
 url = "jdbc:mysql://mysql_host:3306/registry?autoReconnect=true&amp;useSSL=false"
 username = "mysql_user"
 password = "mysql_password"
-
-[database.user]
-type = "mysql"
-url = "jdbc:mysql://mysql_host:3306/userstore?autoReconnect=true&amp;useSSL=false"
-username = "mysql_user"
-password = "mysql_password"
-
-[realm_manager]
-data_source = "WSO2USER_DB"
 
 [keystore.tls]
 file_name =  "wso2carbon.jks"
@@ -121,6 +105,10 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_type = "custom"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
+#[apim.idp]
+#authorize_endpoint = "https://localhost:${mgt.transport.https.port}/oauth2/authorize"
+#oidc_logout_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/logout"
+
 #[apim.jwt]
 #enable = true
 #encoding = "base64" # base64,base64url
@@ -193,9 +181,9 @@ allow_credentials = false
 #service_url = "https://localhost:9445/bpmn"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
-#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/admin/v0.15/workflows/update-workflow-status"
+#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/admin/v0.16/workflows/update-workflow-status"
 #token_endpoint = "https://localhost:${https.nio.port}/token"
-#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.15/register"
+#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.16/register"
 #client_registration_username = "$ref{super_admin.username}"
 #client_registration_password = "$ref{super_admin.password}"
 
