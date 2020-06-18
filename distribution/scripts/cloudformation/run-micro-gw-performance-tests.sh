@@ -31,7 +31,7 @@ export wso2am_rds_db_instance_class=""
 export aws_cloudformation_template_filename="apim_micro_gw_perf_test_cfn.yaml"
 export application_name="WSO2 API Microgateway"
 export ec2_instance_name="wso2am"
-export metrics_file_prefix="microgateway"
+export metrics_file_prefix="apim"
 export run_performance_tests_script_name="run-micro-gw-performance-tests.sh"
 
 function usageCommand() {

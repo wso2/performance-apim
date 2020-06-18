@@ -22,18 +22,23 @@ default_label="echo-mgw"
 label="$default_label"
 default_heap_size="512m"
 heap_size="$default_heap_size"
+#todo: set as parameter
+micro_gw_version="3.1.0"
+default_cpus="2"
+cpus="$default_cpus"
 
 function usage() {
     echo ""
     echo "Usage: "
     echo "$0 [-m <heap_size>] [-n <label>] [-h]"
     echo "-m: The heap memory size of API Microgateway. Default: $default_heap_size."
+    echo "-c: --cpus parameter of API Microgateway (docker). Default: $default_cpus."
     echo "-n: The identifier for the built Microgateway distribution. Default: $default_label."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "m:n:h" opt; do
+while getopts "m:n:c:h" opt; do
     case "${opt}" in
     m)
         heap_size=${OPTARG}
@@ -41,6 +46,9 @@ while getopts "m:n:h" opt; do
     n)
         label=${OPTARG}
         ;;
+    c) 
+        cpus=${OPTARG}
+        ;; 
     h)
         usage
         exit 0
@@ -63,24 +71,15 @@ if [[ -z $label ]]; then
     exit 1
 fi
 
-if [ -e "/home/ubuntu/micro-gw-${label}/bin/gateway.pid" ]; then
-    PID=$(cat "/home/ubuntu/micro-gw-${label}/bin/gateway.pid")
-fi
+docker kill $(docker ps -a | grep wso2/wso2micro-gw:$micro_gw_version | awk '{print $1}')
+docker rm $(docker ps -a | grep wso2/wso2micro-gw:$micro_gw_version | awk '{print $1}')
 
-if pgrep -f ballerina >/dev/null; then
-    echo "Shutting down microgateway"
-    pgrep -f ballerina | xargs kill -9
+# create a separate location to keep logs
+if [ ! -d "/home/ubuntu/micro-gw-${label}" ]; then
+  mkdir /home/ubuntu/micro-gw-${label}
+  mkdir /home/ubuntu/micro-gw-${label}/logs
+  mkdir /home/ubuntu/micro-gw-${label}/runtime
 fi
-
-echo "Waiting for microgateway to stop"
-while true; do
-    if ! pgrep -f ballerina >/dev/null; then
-        echo "Microgateway stopped"
-        break
-    else
-        sleep 10
-    fi
-done
 
 log_files=(/home/ubuntu/micro-gw-${label}/logs/*)
 
@@ -89,10 +88,15 @@ if [ ${#log_files[@]} -gt 1 ]; then
     mv /home/ubuntu/micro-gw-${label}/logs/* /tmp/
 fi
 
+#create empty file to mount into docker
+touch /home/ubuntu/micro-gw-${label}/logs/gc.log
+touch /home/ubuntu/micro-gw-${label}/runtime/heap-dump.hprof
+touch /home/ubuntu/micro-gw-${label}/logs/microgateway.log
+chmod -R a+rw /home/ubuntu/micro-gw-${label}
+
 echo "Enabling GC Logs"
-export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/micro-gw-${label}/logs/gc.log"
-JAVA_OPTS+=" -Xms${heap_size} -Xmx${heap_size}"
-JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="/home/ubuntu/micro-gw-${label}/runtime/heap-dump.hprof""
+export JAVA_OPTS="-Xms${heap_size} -Xmx${heap_size} -XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ballerina/gc.log"
+JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="/home/ballerina/heap-dump.hprof""
 
 jvm_dir=""
 for dir in /usr/lib/jvm/jdk1.8*; do
@@ -100,10 +104,24 @@ for dir in /usr/lib/jvm/jdk1.8*; do
 done
 export JAVA_HOME="${jvm_dir}"
 
+#overwrite the micro-gw.conf
+echo $(ifconfig | grep "inet " | grep -v "127.0.0.1" | grep -v "172." |awk '{print $2}')
+sh /home/ubuntu/apim/micro-gw/create-micro-gw-conf.sh -i $(ifconfig | grep "inet " | grep -v "127.0.0.1" | grep -v "172." |awk '{print $2}')
+
 echo "Starting Microgateway"
-pushd /home/ubuntu/micro-gw-${label}/bin/
-bash gateway >/dev/null &
+pushd /home/ubuntu/${label}/target/
+(
+    set -x
+    #todo: change the conf path after properly fixing the micro-gw.conf
+    docker run -d -v ${PWD}:/home/exec/ -v /home/ubuntu/micro-gw.conf:/home/ballerina/conf/micro-gw.conf -p 9095:9095 -p 9090:9090 -e project=${label} \
+    -e JAVA_OPTS="${JAVA_OPTS}" --name="microgw" --cpus=${cpus} \
+    -v /home/ubuntu/micro-gw-${label}/logs/gc.log:/home/ballerina/gc.log -v /home/ubuntu/micro-gw-${label}/runtime/heap-dump.hprof:/home/ballerina/heap-dump.hprof \
+    wso2/wso2micro-gw:${micro_gw_version}
+)
 popd
+
+docker stop $(docker ps -a | grep wso2/wso2micro-gw:$micro_gw_version | awk '{print $1}')
+docker start $(docker ps -a | grep wso2/wso2micro-gw:$micro_gw_version | awk '{print $1}')
 
 echo "Waiting for Microgateway to start"
 

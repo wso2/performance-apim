@@ -19,6 +19,7 @@
 
 script_dir=$(dirname "$0")
 tokens_count=""
+tokens_file_name=""
 
 function usage() {
     echo ""
@@ -30,11 +31,14 @@ function usage() {
     echo ""
 }
 
-while getopts "t:h" opt; do
+while getopts "t:a:h" opt; do
     case "${opt}" in
     t)
         tokens_count=${OPTARG}
         ;;
+    a)
+        tokens_file_name=${OPTARG}
+        ;;    
     h)
         usage
         exit 0
@@ -53,7 +57,12 @@ if [[ -z $tokens_count ]]; then
 fi
 
 mkdir -p "$script_dir/target"
-tokens_file="$script_dir/target/tokens.csv"
+
+if [[ -z $tokens_file_name ]]; then
+    tokens_file="$script_dir/target/tokens.csv"
+else
+    tokens_file="$script_dir/target/${tokens_file_name}"
+fi
 
 if [[ -f $tokens_file ]]; then
     mv $tokens_file /tmp

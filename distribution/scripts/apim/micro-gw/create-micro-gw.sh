@@ -16,7 +16,7 @@
 # ----------------------------------------------------------------------------
 # Setup WSO2 API Microgateway Project
 # ----------------------------------------------------------------------------
-spawn micro-gw setup echo-mgw -a echo -v 1.0.0 -f
+spawn micro-gw import echo-mgw -a echo -v 1.0.0
 expect -exact "Enter Username:"
 send -- "admin\r"
 expect -exact "Enter Password for admin:"
