@@ -157,6 +157,21 @@ Usage:
 -h: Display this help and exit.
 ```
 
+Performance test script options. (run_performance_test_options)
+```
+-m: Application heap memory sizes. You can give multiple options to specify multiple heap memory sizes. Allowed suffixes: M, G.
+-u: Concurrent Users to test. You can give multiple options to specify multiple users.
+-b: Message sizes in bytes. You can give multiple options to specify multiple message sizes.
+-s: Backend Sleep Times in milliseconds. You can give multiple options to specify multiple sleep times.
+-d: Test Duration in seconds. Default 900.
+-w: Warm-up time in seconds. Default 300.
+-j: Heap Size of JMeter Server. Allowed suffixes: M, G. Default 4G.
+-k: Heap Size of JMeter Client. Allowed suffixes: M, G. Default 2G.
+-l: Heap Size of Netty Service. Allowed suffixes: M, G. Default 4G.
+-i: Scenario name to to be included. You can give multiple options to filter scenarios.
+-e: Scenario name to to be excluded. You can give multiple options to filter scenarios.
+```
+
 ### Testing WSO2 API Microgateway
 
 Use `cloudformation/run-micro-gw-performance-tests.sh` to run performance tests on WSO2 API Microgateway.
@@ -196,6 +211,22 @@ Usage:
 -w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status.
     Default: 5.
 -h: Display this help and exit.
+```
+
+Performance test script options. (run_performance_test_options)
+```
+-m: Application heap memory sizes. You can give multiple options to specify multiple heap memory sizes. Allowed suffixes: M, G.
+-u: Concurrent Users to test. You can give multiple options to specify multiple users.
+-b: Message sizes in bytes. You can give multiple options to specify multiple message sizes.
+-s: Backend Sleep Times in milliseconds. You can give multiple options to specify multiple sleep times.
+-d: Test Duration in seconds. Default 900.
+-w: Warm-up time in seconds. Default 300.
+-j: Heap Size of JMeter Server. Allowed suffixes: M, G. Default 4G.
+-k: Heap Size of JMeter Client. Allowed suffixes: M, G. Default 2G.
+-l: Heap Size of Netty Service. Allowed suffixes: M, G. Default 4G.
+-c: Number of cpus (--cpus option for docker)
+-i: Scenario name to to be included. You can give multiple options to filter scenarios.
+-e: Scenario name to to be excluded. You can give multiple options to filter scenarios.
 ```
 
 ## Running performance tests on other enviroments
