@@ -17,7 +17,7 @@ The package (**performance-apim-distribution-${version}.tar.gz**) built by the d
 The scripts in this repository depend on the scripts in
  "[performance-common](https://github.com/wso2/performance-common/)" repository.
 
-**Note:** The scripts are only compatible with **WSO2 API Manager 2.6.0**.
+**Note:** The scripts are only compatible with **WSO2 API Manager 3.0.0**.
 
 Following is the recommended deployment for performance testing All-in-one WSO2 API Manager.
 
