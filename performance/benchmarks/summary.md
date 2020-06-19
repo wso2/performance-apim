@@ -203,13 +203,13 @@ The following is the summary of performance test results collected for the measu
 The following figure shows how the Throughput changes for different number of concurrent users.
 
 ![picture](all-comparison-plots/comparison_thrpt_0ms.png)
-![picture](all-comparison-plots/lmplot-average-response-time-concurrent-users-2G.png)
+![picture](all-comparison-plots/lmplot-throughput-concurrent-users-2G.png)
 
 
-The following figure shows how the Average Response Time changes  for different number of concurrent users.
+The following figure shows how the Average Response Time changes for different number of concurrent users.
 
 ![picture](all-comparison-plots/comparison_avgt_0ms.png)
-![picture](all-comparison-plots/lmplot-average-response-time-message-size-2G.png)
+![picture](all-comparison-plots/lmplot-average-response-time-concurrent-users-2G.png)
 
 
 Let’s look at the 90th, 95th, and 99th Response Time percentiles. This is useful to measure the percentage of requests that exceeded the response time value for a given percentile. A percentile can also tell the percentage of requests completed below the particular response time value.
