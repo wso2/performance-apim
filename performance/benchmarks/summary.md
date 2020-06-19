@@ -199,3 +199,24 @@ The following is the summary of performance test results collected for the measu
 |  Transformation | 2G | 1000 | 10240 | 30 | 0 | 588.23 | 1697.24 | 317.53 | 2511 | 92.81 |  |
 |  Transformation | 2G | 1000 | 10240 | 500 | 0 | 571.27 | 1745.8 | 422.03 | 2815 | 91.59 | 478 |
 |  Transformation | 2G | 1000 | 10240 | 1000 | 0 | 524.66 | 1901.39 | 380.3 | 2719 | 94.15 |  |
+
+The following figure shows how the Throughput changes for different number of concurrent users.
+
+![picture](all-comparison-plots/comparison_thrpt_0ms.png)
+![picture](all-comparison-plots/lmplot-average-response-time-concurrent-users-2G.png)
+
+
+The following figure shows how the Average Response Time changes  for different number of concurrent users.
+
+![picture](all-comparison-plots/comparison_avgt_0ms.png)
+![picture](all-comparison-plots/lmplot-average-response-time-message-size-2G.png)
+
+
+Let’s look at the 90th, 95th, and 99th Response Time percentiles. This is useful to measure the percentage of requests that exceeded the response time value for a given percentile. A percentile can also tell the percentage of requests completed below the particular response time value.
+
+![picture](all-comparison-plots/comparison_response_time_0ms.png)
+
+
+The GC Throughput was calculated for each test to check whether GC operations are not impacting the performance of the server. The GC Throughput is the time percentage of the application, which was not busy with GC operations. 
+
+![picture](all-comparison-plots/comparison_gc_0ms.png)
