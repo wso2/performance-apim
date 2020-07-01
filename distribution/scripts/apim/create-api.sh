@@ -293,8 +293,7 @@ subscription_request() {
 { 
    "apiId":"$1",
    "applicationId":"$application_id",
-   "throttlingPolicy":"Unlimited",
-   "type":"API"
+   "throttlingPolicy":"Unlimited"
 }
 EOF
 }
