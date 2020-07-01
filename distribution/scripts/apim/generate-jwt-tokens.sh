@@ -86,9 +86,7 @@ fi
 
 application_id=$(cat $application_id_file)
 
-generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/micro-gw/jwt-generator-0.1.1-SNAPSHOT.jar --api-name "echo,mediation" \
-        --context "echo,mediation" --version "1.0.0,1.0.0" --app-name "PerformanceTestAPP" --app-owner "admin" --consumer-key "$consumer_key"\
-        --app-tier "Unlimited" --subs-tier "Unlimited" --app-uuid "$application_id" \
+generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/micro-gw/jwt-generator-0.1.1-SNAPSHOT.jar --consumer-key "$consumer_key"\
         --key-store-file $script_dir/jwt/wso2carbon.jks \
         --tokens-count $tokens_count --output-file $tokens_file"
 echo "Generating Tokens: $generate_tokens_command"

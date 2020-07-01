@@ -19,10 +19,7 @@ package org.wso2.performance.apim.microgw.jwt;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.performance.apim.microgw.jwt.model.ApplicationDTO;
-import org.wso2.performance.apim.microgw.jwt.model.SubscribedApiDTO;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,9 +33,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -49,33 +44,6 @@ public class JWTGenerator {
 
     private static final String WSO2CARBON = "wso2carbon";
     private static final int VALIDITY_PERIOD = 3600 * 24 * 365;
-
-    @Parameter(names = "--api-name", description = "API Name", required = true)
-    private String apiName;
-
-    @Parameter(names = "--context", description = "API Context", required = true)
-    private String context;
-
-    @Parameter(names = "--version", description = "API Version", required = true)
-    private String version;
-
-    @Parameter(names = "--app-name", description = "Application Name", required = true)
-    private String appName;
-    
-    @Parameter(names = "--app-owner", description = "Application Owner", required = true)
-    private String appOwner;
-
-    @Parameter(names = "--app-tier", description = "Application Tier", required = true)
-    private String appTier;
-
-    @Parameter(names = "--subs-tier", description = "Subscription Tier", required = true)
-    private String subsTier;
-
-    @Parameter(names = "--app-id", description = "Application ID", required = false)
-    private int appId;
-    
-    @Parameter(names = "--app-uuid", description = "Application UUID", required = false)
-    private String appUUId;
 
     @Parameter(names = "--consumer-key", description = "Consumer key", required = true)
     private String consumerKey;
@@ -118,42 +86,11 @@ public class JWTGenerator {
 
     private void generateTokens() throws Exception {
         long startTime = System.nanoTime();
-        standardOutput.format("Generating tokens for API: %s and Application: %s.%n", apiName, appName);
-        ApplicationDTO application = new ApplicationDTO();
-        application.setName(appName);
-        application.setTier(appTier);
-        application.setId(appId);
-        application.setUuid(appUUId);
-        application.setOwner(appOwner);
-
-        List<SubscribedApiDTO> subscribedList = new ArrayList<SubscribedApiDTO>();
-        
-        String[] apiNameList = apiName.split(",");
-        String[] contextList = context.split(",");
-        String[] versionList = version.split(",");
-        
-        for (int i = 0; i < apiNameList.length; i++) {
-            SubscribedApiDTO subscribedApiDTO = new SubscribedApiDTO();
-            subscribedApiDTO.setContext("/" + contextList[i] + "/" + versionList[i]);
-            subscribedApiDTO.setName(apiNameList[i]);
-            subscribedApiDTO.setVersion(versionList[i]);
-            subscribedApiDTO.setPublisher("admin");
-            subscribedApiDTO.setSubscriptionTier(subsTier);
-            subscribedApiDTO.setSubscriberTenantDomain("carbon.super");
-            subscribedList.add(subscribedApiDTO);
-        }
 
         JSONObject head = new JSONObject();
-        head.put("typ", "JWT");
+        head.put("x5t", "MzYxMmFkOGYwMWI0ZWNmNDcxNGYwYmM4ZTA3MWI2NDAzZGQzNGM0ZGRlNjJkODFkZDRiOTFkMWFhMzU2ZGVlNg");
+        head.put("kid", "MzYxMmFkOGYwMWI0ZWNmNDcxNGYwYmM4ZTA3MWI2NDAzZGQzNGM0ZGRlNjJkODFkZDRiOTFkMWFhMzU2ZGVlNg_RS256");
         head.put("alg", "RS256");
-        head.put("x5t", "UB_BQy2HFV3EMTgq64Q-1VitYbE");
-
-        JSONObject tierInfoElement = new JSONObject();
-        tierInfoElement.put("stopOnQuotaReach", true);
-        tierInfoElement.put("spikeArrestLimit", 0);
-        tierInfoElement.put("spikeArrestUnit", "s");
-        JSONObject tierInfo = new JSONObject();
-        tierInfo.put(subsTier, tierInfoElement);
         
         String header = head.toString();
 
@@ -175,18 +112,16 @@ public class JWTGenerator {
             for (int i = 1; i <= tokensCount; i++) {
                 JSONObject jwtTokenInfo = new JSONObject();
                 jwtTokenInfo.put("aud", "http://org.wso2.apimgt/gateway");
-                jwtTokenInfo.put("sub", "admin");
-                jwtTokenInfo.put("application", new JSONObject(application));
+                jwtTokenInfo.put("sub", "admin@carbon.super");
                 jwtTokenInfo.put("scope", "am_application_scope default");
                 jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
                 jwtTokenInfo.put("keytype", "PRODUCTION");
-                jwtTokenInfo.put("subscribedAPIs", new JSONArray(subscribedList));
                 jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                         + VALIDITY_PERIOD);
+                jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));        
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
                 jwtTokenInfo.put("consumerKey", consumerKey);
-                jwtTokenInfo.put("tierInfo", tierInfo);
 
                 String payload = jwtTokenInfo.toString();
                 String base64UrlEncodedBody = Base64.getUrlEncoder()
