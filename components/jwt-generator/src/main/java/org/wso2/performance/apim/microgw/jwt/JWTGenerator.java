@@ -111,7 +111,7 @@ public class JWTGenerator {
         try (BufferedWriter tokensWriter = new BufferedWriter(new FileWriter(outputFile))) {
             for (int i = 1; i <= tokensCount; i++) {
                 JSONObject jwtTokenInfo = new JSONObject();
-                jwtTokenInfo.put("aud", "http://org.wso2.apimgt/gateway");
+                jwtTokenInfo.put("aud", consumerKey);
                 jwtTokenInfo.put("sub", "admin@carbon.super");
                 jwtTokenInfo.put("scope", "am_application_scope default");
                 jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
@@ -121,7 +121,7 @@ public class JWTGenerator {
                 jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));        
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
-                jwtTokenInfo.put("consumerKey", consumerKey);
+                jwtTokenInfo.put("azp", consumerKey);
 
                 String payload = jwtTokenInfo.toString();
                 String base64UrlEncodedBody = Base64.getUrlEncoder()
