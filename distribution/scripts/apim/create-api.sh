@@ -160,7 +160,7 @@ app_request() {
 EOF
 }
 
-client_credentials=$($curl_command -u admin:admin -H "Content-Type: application/json" -d "$(client_request)" ${base_https_url}/client-registration/v0.16/register | jq -r '.clientId + ":" + .clientSecret')
+client_credentials=$($curl_command -u admin:admin -H "Content-Type: application/json" -d "$(client_request)" ${base_https_url}/client-registration/v0.17/register | jq -r '.clientId + ":" + .clientSecret')
 
 get_access_token() {
     local access_token=$($curl_command -d "grant_type=password&username=admin&password=admin&scope=apim:$1" -u $client_credentials ${nio_https_url}/token | jq -r '.access_token')
@@ -293,8 +293,7 @@ subscription_request() {
 { 
    "apiId":"$1",
    "applicationId":"$application_id",
-   "throttlingPolicy":"Unlimited",
-   "type":"API"
+   "throttlingPolicy":"Unlimited"
 }
 EOF
 }

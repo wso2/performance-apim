@@ -31,7 +31,7 @@ df = df.loc[df['Error Count'] < 100]
 # Format message size values
 df['Message Size (Bytes)'] = df['Message Size (Bytes)'].map(apimchart.format_bytes)
 
-unique_sleep_times = df['Sleep Time (ms)'].unique()
+unique_sleep_times = df['Back-end Service Delay (ms)'].unique()
 unique_message_sizes = df['Message Size (Bytes)'].unique()
 
 
@@ -41,7 +41,7 @@ def save_line_chart(chart, column, title, ylabel=None):
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
     sns_plot = sns.pointplot(x="Concurrent Users", y=column, hue="Message Size (Bytes)",
-                             data=df.loc[df['Sleep Time (ms)'] == sleep_time], ci=None, dodge=True)
+                             data=df.loc[df['Back-end Service Delay (ms)'] == sleep_time], ci=None, dodge=True)
     ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
     if ylabel is None:
@@ -58,10 +58,10 @@ def save_bar_chart(title):
     print("Creating chart: " + title + ", File name: " + filename)
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
-    df_results = df.loc[(df['Message Size (Bytes)'] == message_size) & (df['Sleep Time (ms)'] == sleep_time)]
+    df_results = df.loc[(df['Message Size (Bytes)'] == message_size) & (df['Back-end Service Delay (ms)'] == sleep_time)]
     df_results = df_results[
-        ['Message Size (Bytes)', 'Concurrent Users', 'Min (ms)', '90th Percentile (ms)', '95th Percentile (ms)',
-         '99th Percentile (ms)', 'Max (ms)']]
+        ['Message Size (Bytes)', 'Concurrent Users', 'Minimum Response Time (ms)', '90th Percentile of Response Time (ms)', '95th Percentile of Response Time (ms)',
+         '99th Percentile of Response Time (ms)', 'Maximum Response Time (ms)']]
     df_results = df_results.set_index(['Message Size (Bytes)', 'Concurrent Users']).stack().reset_index().rename(
         columns={'level_2': 'Summary', 0: 'Response Time (ms)'})
     sns.barplot(x='Concurrent Users', y='Response Time (ms)', hue='Summary', data=df_results, ci=None)
@@ -74,20 +74,20 @@ def save_bar_chart(title):
 
 
 for sleep_time in unique_sleep_times:
-    save_line_chart("thrpt", "Throughput", "Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
+    save_line_chart("thrpt", "Throughput (Requests/sec)", "Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="Throughput (Requests/sec)")
-    save_line_chart("avgt", "Average (ms)",
+    save_line_chart("avgt", "Average Response Time (ms)",
                     "Average Response Time vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="Average Response Time (ms)")
-    save_line_chart("gc", "API Manager GC Throughput (%)",
+    save_line_chart("gc", "WSO2 API Manager GC Throughput (%)",
                     "GC Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="GC Throughput (%)")
-    df_results = df.loc[df['Sleep Time (ms)'] == sleep_time]
+    df_results = df.loc[df['Back-end Service Delay (ms)'] == sleep_time]
     chart_suffix = "_" + str(sleep_time) + "ms"
     apimchart.save_multi_columns_categorical_charts(df_results, "loadavg" + chart_suffix,
-                                                    ['API Manager Load Average - Last 1 minute',
-                                                     'API Manager Load Average - Last 5 minutes',
-                                                     'API Manager Load Average - Last 15 minutes'],
+                                                    ['WSO2 API Manager - System Load Average - Last 1 minute',
+                                                     'WSO2 API Manager - System Load Average - Last 5 minutes',
+                                                     'WSO2 API Manager - System Load Average - Last 15 minutes'],
                                                     "Load Average", "API Manager",
                                                     "Load Average with " + str(sleep_time) + "ms backend delay")
     apimchart.save_multi_columns_categorical_charts(df_results, "network" + chart_suffix,
@@ -95,8 +95,8 @@ for sleep_time in unique_sleep_times:
                                                     "Network Throughput (KB/sec)", "Network",
                                                     "Network Throughput with " + str(sleep_time) + "ms backend delay")
     apimchart.save_multi_columns_categorical_charts(df_results, "response_time" + chart_suffix,
-                                                    ['90th Percentile (ms)', '95th Percentile (ms)',
-                                                     '99th Percentile (ms)'],
+                                                    ['90th Percentile of Response Time (ms)', '95th Percentile of Response Time (ms)',
+                                                     '99th Percentile of Response Time (ms)'],
                                                     "Response Time (ms)", "Response Time",
                                                     "Response Time Percentiles with " + str(sleep_time)
                                                     + "ms backend delay", kind='bar')

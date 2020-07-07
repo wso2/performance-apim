@@ -138,6 +138,9 @@ function setup() {
     install_dir=/home/$os_user
     $script_dir/../java/install-java.sh -f $oracle_jdk_dist -u $os_user
 
+    #install docker
+    $script_dir/../docker/install-docker.sh -u $os_user
+
     pushd ${install_dir}
 
     #Remove API Manager if it is already there
@@ -168,6 +171,10 @@ function setup() {
     sudo -u $os_user mv -v $mgw_dirname micro-gw
     echo "Micro Gateway is extracted"
 
+    #todo: change the scripts to support APIM latest version
+    #Copy toolkit-config.toml file to support APIM 2.6.0
+    # cp $script_dir/../apim/micro-gw/toolkit-config.toml $PWD/micro-gw/conf/toolkit-config.toml
+
     jvm_dir=""
     for dir in /usr/lib/jvm/jdk1.8*; do
         [ -d "${dir}" ] && jvm_dir="${dir}" && break
@@ -177,19 +184,24 @@ function setup() {
     #Export the PATH of Micro-GW
     export PATH=$PATH:$PWD/micro-gw/bin
 
-    # setup Micro-GW project
+    #initialize Micro-GW project
+    micro-gw init echo-mgw -f
+
+    #import Micro-GW project
     ./apim/micro-gw/create-micro-gw.sh
 
     #build Micro-GW
     micro-gw build echo-mgw
 
-    sudo -u $os_user unzip -q echo-mgw/target/micro-gw-echo-mgw.zip
+    #create empty file to avoid permission issues
+    touch /home/ubuntu/micro-gw.conf
+    chmod a+rw /home/ubuntu/micro-gw.conf
 
     #start Micro-GW
-    sudo -u $os_user ./apim/micro-gw/micro-gw-start.sh -m 512m -n echo-mgw
+    sudo -u $os_user ./apim/micro-gw/micro-gw-start.sh -m 512m -n echo-mgw -c 1
 
     #Generate jwt-tokens
-    sudo -u $os_user ./apim/micro-gw/generate-jwt-tokens.sh -t 1000
+    sudo -u $os_user ./apim/generate-jwt-tokens.sh -t 1000 -a jwt-tokens.csv
 
     # Generate oauth2 access tokens
     tokens_sql="$script_dir/../apim/target/tokens.sql"
@@ -197,8 +209,9 @@ function setup() {
         sudo -u $os_user $script_dir/../apim/generate-tokens.sh -t 4000
     fi
 
-    if [[ -f $tokens_sql ]]; then
-        mysql -h $mysql_host -u $mysql_user -p$mysql_password apim <$tokens_sql
+    gen_tokens_sql="$script_dir/../apim/target/tokens.sql"
+    if [[ -f $gen_tokens_sql ]]; then
+        mysql -h $mysql_host -u $mysql_user -p$mysql_password apim < $gen_tokens_sql
     else
         echo "SQL file with generated tokens not found."
         exit 1

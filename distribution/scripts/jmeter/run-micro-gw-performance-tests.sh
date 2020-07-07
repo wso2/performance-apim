@@ -27,7 +27,7 @@ function initialize() {
     export apim_ssh_host=apim
     export apim_host=$(get_ssh_hostname $apim_ssh_host)
     echo "Downloading tokens to $HOME."
-    scp $apim_ssh_host:apim/micro-gw/target/jwt-tokens.csv $HOME/
+    scp $apim_ssh_host:apim/target/jwt-tokens.csv $HOME/
     scp $apim_ssh_host:apim/target/tokens.csv $HOME/
     if [[ $jmeter_servers -gt 1 ]]; then
         for jmeter_ssh_host in ${jmeter_ssh_hosts[@]}; do
@@ -40,7 +40,7 @@ function initialize() {
 export -f initialize
 
 declare -A test_scenario0=(
-    [name]="microgw-passthrough-oauth2"
+    [name]="microgw-passthrough-oauth"
     [display_name]="Microgateway-Passthrough-OAuth2"
     [description]="A secured API, which directly invokes the backend through Microgateway using OAuth2 tokens"
     [jmx]="apim-test.jmx"
@@ -74,15 +74,17 @@ function before_execute_test_scenario() {
     jmeter_params+=("host=$apim_host" "port=$port" "path=$service_path")
     jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
         "tokens=$tokens")
+    echo "Starting APIM"
+    ssh $apim_ssh_host "./apim/apim-start.sh -m 2G"
     echo "Starting APIM Micro-GW service"
-    ssh $apim_ssh_host "./apim/micro-gw/micro-gw-start.sh -m $heap -n echo-mgw"
+    ssh $apim_ssh_host "./apim/micro-gw/micro-gw-start.sh -m $heap -n echo-mgw" -c $cpus
 }
 
 function after_execute_test_scenario() {
-    write_server_metrics microgateway $apim_ssh_host ballerina.*/runtime/bre
-    download_file $apim_ssh_host micro-gw-echo-mgw/logs/microgateway.log microgateway.log
-    download_file $apim_ssh_host micro-gw-echo-mgw/logs/gc.log microgateway_gc.log
-    download_file $apim_ssh_host micro-gw-echo-mgw/runtime/heap-dump.hprof microgateway_heap_dump.hprof
+    write_server_metrics apim $apim_ssh_host /ballerina/runtime/bre/lib
+    # download_file $apim_ssh_host micro-gw-echo-mgw/logs/microgateway.log microgateway.log
+    download_file $apim_ssh_host micro-gw-echo-mgw/logs/gc.log apim_gc.log
+    download_file $apim_ssh_host micro-gw-echo-mgw/runtime/heap-dump.hprof apim_heap_dump.hprof
 }
 
 test_scenarios

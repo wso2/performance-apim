@@ -1,0 +1,23 @@
+[client]
+httpRequestTimeout = 1000000
+
+[token]
+baseURL = ""
+restVersion = "v0.14"
+dcrVersion = "v0.14"
+publisherEndpoint = "{baseURL}/api/am/publisher/{restVersion}"
+adminEndpoint = "{baseURL}/api/am/admin/{restVersion}"
+registrationEndpoint = "{baseURL}/client-registration/{dcrVersion}/register"
+tokenEndpoint = "{baseURL}/oauth2/token"
+username = ""
+clientId = ""
+clientSecret = ""
+trustStoreLocation = ""
+trustStorePassword = ""
+
+[corsConfiguration]
+corsConfigurationEnabled = false
+accessControlAllowCredentials = false
+accessControlAllowOrigins = ["*"]
+accessControlAllowHeaders = ["authorization", "Access-Control-Allow-Origin", "Content-Type", "SOAPAction"]
+accessControlAllowMethods = ["GET", "PUT", "POST", "DELETE", "PATCH", "OPTIONS"]
