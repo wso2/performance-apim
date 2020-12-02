@@ -1,0 +1,8 @@
+*The WebSocket client used for sending requests is Thor. Thor send a message and wait for the response from backend to send the next message.,,,,,,,,,,
+"* ""Time taken"" referes to the total time taken for sending requests and receiving responses.",,,,,,,,,,
+,,,,,,,,,,
+Direct Tornado backend:,,,,,,,,,,
+Connections,No. of messages,message size,Time taken(ms),Connected,Disconnected,Failed,Total transferred,Total received,Transmission rate(B/S),Handshaking[mean](ms)
+1,5000,100B,2753,1,0,0,517.81kB,498.24kB,"377,927.79",21
+1,"10,000",100B,4638,1,0,0,1.01MB,0.97MB,"447,645.64",24
+1,"50,000",100B,20651,1,0,0,5.05MB,4.86MB,"503,190.56",22

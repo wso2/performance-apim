@@ -1,0 +1,9 @@
+*The WebSocket client used for sending requests is Thor. Thor send a message and wait for the response from backend to send the next message.,,,,,,,,,,
+"* ""Time taken"" referes to the total time taken for sending requests and receiving responses.",,,,,,,,,,
+*Note:only one jwt token is used per one test execution),,,,,,,,,,
+,,,,,,,,,,
+Tornado Backend(locally running backend):,,,,,,,,,,
+Connections,No. of messages,message size,Time taken(ms),Connected,Disconnected,Failed,Total transferred,Total received,Transmission rate(B/S),Handshaking[mean](ms)
+1,5000,100B,31410,1,0,0,518.82kB,498.18kB,"33,155.30",496
+1,"10,000",100B,56975,1,0,0,1.01MB,0.97MB,"36,440.20",631
+1,"50,000",100B,287597,1,0,0,5.06MB,4.86MB,"36,168.23",518

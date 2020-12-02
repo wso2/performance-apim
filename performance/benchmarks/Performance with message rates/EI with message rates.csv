@@ -1,0 +1,19 @@
+*The WebSocket client used for sending requests is Thor. Thor send a message and wait for the response from backend to send the next message.,,,,,,,,,,
+"* ""Time taken"" referes to the total time taken for sending requests and receiving responses.",,,,,,,,,,
+,,,,,,,,,,
+Tornado Backend(locally running backend):,,,,,,,,,,
+Connections,No. of messages,message size,Time taken(ms),Connected,Disconnected,Failed,Total transferred,Total received,Transmission rate(B/S),Handshaking[mean](ms)
+1,5000,100B,13794,1,0,0,517.81kB,498.18kB,75422.2,262
+1,10000,100B,34943,1,0,0,1.01MB,0.97MB,59416.21,289
+1,10000,500B,24012,1,0,0,4.84MB,4.81MB,421404.23,226
+1,10000,1KB,23941,1,0,0,9.84MB,9.8MB,860199.35,254
+1,50000,100B,177447,1,0,0,5.05MB,4.86MB,58560.52,264
+1,50000,500B,114107,1,0,0,24.22MB,24.03MB,443389.03,359
+1,50000,1KB,143269,1,0,0,49.21MB,49.02MB,718938.64,242
+,,,,,,,,,,
+,,,,,,,,,,
+,,,,,,,,,,
+Echo backend(Online running backend):,,,,,,,,,,
+Connections,No. of messages,message size,Time taken(ms),Connected,Disconnected,Failed,Total transferred,Total received,Transmission rate(B/S),Handshaking[mean](ms)
+1,5000,100B,1477259,1,0,0,517.81kB,498.18kB,0.7,306
+1,10000,100B,3038780,1,0,0,1.01MB,0.97MB,0.68,281
