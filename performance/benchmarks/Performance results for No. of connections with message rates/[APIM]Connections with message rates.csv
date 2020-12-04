@@ -1,5 +1,3 @@
-*This sheet presents the performance results of APIM with different number of connections and message rates(Note: only one jwt token is used per one test execution).,,,,,,,,,,
-,,,,,,,,,,
 Connections,No. of messages,message size,Time taken(ms),Connected,Disconnected,Failed,Total transferred,Total received,Transmission rate(B/S),Handshaking[mean](ms)
 100,"5,000",100B,1870352,100,0,0,50.67MB,48.65MB,"55,681.80",1199
 100,"5,000",500B,1872010,100,0,0,242.36MB,240.34MB,"270,376.57",1119

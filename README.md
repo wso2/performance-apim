@@ -1,4 +1,4 @@
-# Artifacts for WSO2 API Manager and WSO2 API Microgateway Performance Tests
+# Artifacts for WSO2 API Manager WebSocket API Performance Tests
 
 ---
 |  Branch | Build Status |
@@ -6,243 +6,55 @@
 | master  | [![Build Status](https://wso2.org/jenkins/buildStatus/icon?job=platform-builds/performance-apim)](https://wso2.org/jenkins/job/platform-builds/job/performance-apim/) |
 ---
 
-This repository has artifacts to be used for WSO2 API Manager Performance Tests.
+This repository has artifacts to be used for WSO2 API Manager WebSocket API Performance Tests.
 
-The [distribution](distribution) directory has the scripts and the Maven project to build the final distribution package
- to be used for performance tests.
+The [distribution](distribution) directory has the jmeter scripts used to evaluate the performance of WebSocket APIs.
 
-The package (**performance-apim-distribution-${version}.tar.gz**) built by the distribution maven module is the
- package required for API Manager performance tests from this repository.
+## Approach
 
-The scripts in this repository depend on the scripts in
- "[performance-common](https://github.com/wso2/performance-common/)" repository.
+* First, the number of connections that a single WebSocket API can handle was evaluated using Jmeter while increasing the ramp up period. And the Enterprise Integrator also evaluated for the number of connections that a WebSocket endpoint can handle when connecting through WSO2 EI.
+* Then, perfomance with message rates was evaluated while establishing a single connection. For this, Thor was used as the WebSocket client and Tornardo was used as the backend.
+  
+  **Note:** When sending messages using Thor WebSocket client, Thor send a message and wait for the response from backend to send the next message.
+* Finally, another evaluation was done to measure the perfomance of APIM with different number of connections and message rates.
 
-**Note:** The scripts are only compatible with **WSO2 API Manager 3.1.0**.
+## Evaluation results
 
-Following is the recommended deployment for performance testing All-in-one WSO2 API Manager.
+Following graph shows how the error rate varies with the ramp up period for 250,300,500,750 and 1000 connections for APIM.
 
-![API Manager All-in-one Deployment](diagrams/APIM_Performance_Test_All_in_one_Deployment.jpg)
+**Note:** A single JWT Token is used per test execution for APIM.
 
-## Package contents
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Error_rate_vs_Ramp_up_period_for_APIM.png)
 
-Following is the tree view of the contents inside distribution package.
+Following graph shows how the error rate varies with the ramp up period for 250,300,500,750 and 1000 connections for EI.
 
-```console
-ubuntu@server:~$ tree --charset=ascii | sed -e 's/[0-9]\.[0-9]\.[0-9].*\.jar/${version}.jar/g'
-.
-|-- apim
-|   |-- apim-start.sh
-|   |-- conf
-|   |   |-- datasources
-|   |   |   `-- master-datasources.xml
-|   |   |-- registry.xml
-|   |   `-- user-mgt.xml
-|   |-- configure.sh
-|   |-- create-api.sh
-|   |-- generate-tokens.sh
-|   |-- micro-gw
-|   |   |-- create-micro-gw.sh
-|   |   |-- generate-jwt-tokens.sh
-|   |   |-- jwt-generator-${version}.jar
-|   |   |-- micro-gw-start.sh
-|   |   `-- wso2carbon.jks
-|   `-- sqls
-|       `-- create-databases.sql
-|-- cloudformation
-|   |-- cloudformation-common.sh
-|   |-- create-template.py
-|   |-- download-logs.sh
-|   |-- get-wum-updated-wso2-product.sh
-|   |-- python-requirements.txt
-|   |-- run-micro-gw-performance-tests.sh
-|   |-- run-performance-tests.sh
-|   `-- templates
-|       |-- apim_micro_gw_perf_test_cfn.yaml
-|       |-- apim_perf_test_cfn.yaml
-|       `-- common_perf_test_cfn.yaml
-|-- common
-|   `-- common.sh
-|-- java
-|   `-- install-java.sh
-|-- jmeter
-|   |-- apimchart.py
-|   |-- apim-test.jmx
-|   |-- create-charts.py
-|   |-- create-comparison-charts.py
-|   |-- create-summary-csv.sh
-|   |-- create-summary-markdown.py
-|   |-- csv-to-markdown-converter.py
-|   |-- install-jmeter.sh
-|   |-- jmeter-server-start.sh
-|   |-- perf-test-common.sh
-|   |-- run-micro-gw-performance-tests.sh
-|   |-- run-performance-tests.sh
-|   |-- templates
-|   |   `-- summary.md
-|   `-- user.properties
-|-- jtl-splitter
-|   |-- jtl-splitter-${version}.jar
-|   `-- jtl-splitter.sh
-|-- netty-service
-|   |-- netty-http-echo-service-${version}.jar
-|   `-- netty-start.sh
-|-- payloads
-|   |-- generate-payloads.sh
-|   `-- payload-generator-${version}.jar
-|-- sar
-|   `-- install-sar.sh
-`-- setup
-    |-- setup-apim-micro-gw.sh
-    |-- setup-apim.sh
-    |-- setup-common.sh
-    |-- setup-jmeter-client.sh
-    |-- setup-jmeter.sh
-    `-- setup-netty.sh
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Error_rate_vs_Ramp_up_period_for_EI.png)
 
-16 directories, 52 files
-```
+Following graph compares how total time taken for sending requests varies with the number of messages for APIM, EI, APIM+EI and direct tornado backend.
 
-Each directory has executable scripts.
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Time_taken_vs_No_of_messages.png)
 
-This package must be extracted in user home directory of all JMeter nodes and the API Manager node used for the
- performance tests.
+Following graph compares how transmission rate varies with the number of messages for APIM, EI, APIM+EI and direct tornado backend.
 
-**Note:** These scripts will work only on Debian based systems like Ubuntu.
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Transmission_rate_vs_No_of_messages.png)
 
-See following sections for more details.
+Following set of graphs show how the performance of APIM varies with the number of connections and number of messages.
 
-## Running performance tests on AWS
+* Time taken vs. message size for different number of messages.
 
-The performance tests can be run on AWS
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Time_taken_vs_message_size_for_5000_messages.png)
 
-### Testing WSO2 API Manager Gateway
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Time_taken_vs_message_size_for_7000_messages.png)
 
-Use `cloudformation/run-performance-tests.sh` to run performance tests on WSO2 API Manager Gateway.
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Time_taken_vs_message_size_for_10,000_messages(100_connections).png)
 
-```console
-ubuntu@server:~$ ./cloudformation/run-performance-tests.sh -h
+* Transmission rate vs. message size for different number of messages.
 
-Usage: 
-./cloudformation/run-performance-tests.sh -f <performance_scripts_distribution> [-d <results_dir>] -k <key_file> -n <key_name>
-   -j <jmeter_distribution> -o <oracle_jdk_distribution> -g <gcviewer_jar_path>
-   -s <stack_name_prefix> -b <s3_bucket_name> -r <s3_bucket_region>
-   -J <jmeter_client_ec2_instance_type> -S <jmeter_server_ec2_instance_type>
-   -N <netty_ec2_instance_type> 
-   -a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class>
-   [-t <number_of_stacks>] [-p <parallel_parameter_option>] [-w <minimum_stack_creation_wait_time>]
-   [-h] -- [run_performance_tests_options]
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Transmission_rate_vs_meassage_size_for_5000_messages.png)
 
--f: Distribution containing the scripts to run performance tests.
--d: The results directory. Default value is a directory with current time. For example, results-20190124105848.
--k: Amazon EC2 Key File. Amazon EC2 Key Name must match with this file name.
--n: Amazon EC2 Key Name.
--j: Apache JMeter (tgz) distribution.
--o: Oracle JDK distribution.
--g: Path of GCViewer Jar file, which will be used to analyze GC logs.
--s: The Amazon CloudFormation Stack Name Prefix.
--b: Amazon S3 Bucket Name.
--r: Amazon S3 Bucket Region.
--J: Amazon EC2 Instance Type for JMeter Client.
--S: Amazon EC2 Instance Type for JMeter Server.
--N: Amazon EC2 Instance Type for Netty (Backend) Service.
--a: WSO2 API Manager Distribution.
--c: MySQL Connector JAR file.
--A: Amazon EC2 Instance Type for WSO2 API Manager.
--D: Amazon EC2 DB Instance Class for WSO2 API Manager RDS Instance.
--t: Number of stacks to create. Default: 1.
--p: Parameter option of the test script, which will be used to run tests in parallel.
-    Default: u. Allowed option characters: ubsm.
--w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status.
-    Default: 5.
--h: Display this help and exit.
-```
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Transmission_rate_vs_Message_size_for_7000_messages.png)
 
-Performance test script options. (run_performance_test_options)
-```
--m: Application heap memory sizes. You can give multiple options to specify multiple heap memory sizes. Allowed suffixes: M, G.
--u: Concurrent Users to test. You can give multiple options to specify multiple users.
--b: Message sizes in bytes. You can give multiple options to specify multiple message sizes.
--s: Backend Sleep Times in milliseconds. You can give multiple options to specify multiple sleep times.
--d: Test Duration in seconds. Default 900.
--w: Warm-up time in seconds. Default 300.
--j: Heap Size of JMeter Server. Allowed suffixes: M, G. Default 4G.
--k: Heap Size of JMeter Client. Allowed suffixes: M, G. Default 2G.
--l: Heap Size of Netty Service. Allowed suffixes: M, G. Default 4G.
--i: Scenario name to to be included. You can give multiple options to filter scenarios.
--e: Scenario name to to be excluded. You can give multiple options to filter scenarios.
-```
-
-### Testing WSO2 API Microgateway
-
-Use `cloudformation/run-micro-gw-performance-tests.sh` to run performance tests on WSO2 API Microgateway.
-
-```console
-ubuntu@server:~$ ./cloudformation/run-micro-gw-performance-tests.sh -h
-
-Usage: 
-./cloudformation/run-micro-gw-performance-tests.sh -f <performance_scripts_distribution> [-d <results_dir>] -k <key_file> -n <key_name>
-   -j <jmeter_distribution> -o <oracle_jdk_distribution> -g <gcviewer_jar_path>
-   -s <stack_name_prefix> -b <s3_bucket_name> -r <s3_bucket_region>
-   -J <jmeter_client_ec2_instance_type> -S <jmeter_server_ec2_instance_type>
-   -N <netty_ec2_instance_type> 
-   -a <wso2am_distribution> -c <wso2am_micro_gw_distribution> -A <wso2am_ec2_instance_type>
-   [-t <number_of_stacks>] [-p <parallel_parameter_option>] [-w <minimum_stack_creation_wait_time>]
-   [-h] -- [run_performance_tests_options]
-
--f: Distribution containing the scripts to run performance tests.
--d: The results directory. Default value is a directory with current time. For example, results-20190124105955.
--k: Amazon EC2 Key File. Amazon EC2 Key Name must match with this file name.
--n: Amazon EC2 Key Name.
--j: Apache JMeter (tgz) distribution.
--o: Oracle JDK distribution.
--g: Path of GCViewer Jar file, which will be used to analyze GC logs.
--s: The Amazon CloudFormation Stack Name Prefix.
--b: Amazon S3 Bucket Name.
--r: Amazon S3 Bucket Region.
--J: Amazon EC2 Instance Type for JMeter Client.
--S: Amazon EC2 Instance Type for JMeter Server.
--N: Amazon EC2 Instance Type for Netty (Backend) Service.
--a: WSO2 API Manager Distribution.
--c: WSO2 API Microgateway Distribution.
--A: Amazon EC2 Instance Type for WSO2 API Manager.
--t: Number of stacks to create. Default: 1.
--p: Parameter option of the test script, which will be used to run tests in parallel.
-    Default: u. Allowed option characters: ubsm.
--w: The minimum time to wait in minutes before polling for cloudformation stack's CREATE_COMPLETE status.
-    Default: 5.
--h: Display this help and exit.
-```
-
-Performance test script options. (run_performance_test_options)
-```
--m: Application heap memory sizes. You can give multiple options to specify multiple heap memory sizes. Allowed suffixes: M, G.
--u: Concurrent Users to test. You can give multiple options to specify multiple users.
--b: Message sizes in bytes. You can give multiple options to specify multiple message sizes.
--s: Backend Sleep Times in milliseconds. You can give multiple options to specify multiple sleep times.
--d: Test Duration in seconds. Default 900.
--w: Warm-up time in seconds. Default 300.
--j: Heap Size of JMeter Server. Allowed suffixes: M, G. Default 4G.
--k: Heap Size of JMeter Client. Allowed suffixes: M, G. Default 2G.
--l: Heap Size of Netty Service. Allowed suffixes: M, G. Default 4G.
--c: Number of cpus (--cpus option for docker)
--i: Scenario name to to be included. You can give multiple options to filter scenarios.
--e: Scenario name to to be excluded. You can give multiple options to filter scenarios.
-```
-
-## Running performance tests on other enviroments
-
-The scripts can also be used to run performance tests on environments other than AWS.
-
-Following are the high-level steps to run the performance tests.
-
-* Copy the `performance-apim` distribution to all servers.
-* Extract the packages in user home directory
-* Use scripts in `setup` directory to setup each server.
-Note: `setup-common.sh` is a common script, which should not be executed directly.
-* Run the WSO2 API Manager Gateway performance tests using `jmeter/run-performance-test.sh` script in JMeter Client.
-* Run the WSO2 API Microgateway performance tests using `jmeter/run-micro-gw-performance-tests.sh` script in JMeter Client.
-* Use `jmeter/create-summary-csv.sh` to generate a summary.csv file from the test results.
-* Use `jmeter/create-summary-markdown.py` to generate a summary report in markdown format.
+![API Manager All-in-one Deployment](performance/benchmarks/Graphs/Graphs_for_APIM_Performance_results/Transmission_rate_vs_Message_size_for_10,000_messages(100_connections).png)
 
 ## License
 
