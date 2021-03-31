@@ -22,11 +22,6 @@
     Type: String
     ConstraintDescription: must be a valid zip package
     AllowedPattern: ^.*\.zip$
-  JDK11DistributionName:
-    Description: The name of the 'JDK11 Distribution' in S3 Bucket
-    Type: String
-    ConstraintDescription: must be a valid gz package
-    AllowedPattern: ^.*\.gz$
   MySQLConnectorJarName:
     Description: The name of the MySQL Connector Jar in the S3 Backet
     Type: String
@@ -106,8 +101,8 @@
 {%- endif %}
 # WSO2 API Manager
 {% call ec2instance('WSO2APIManagerInstance', 'wso2am', '!Ref WSO2APIManagerInstanceType',
-  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'jdk-11-linux-x64.tar.gz', 'ref': 'JDK11DistributionName'}, {'name': 'mysql-connector-java.jar', 'ref': 'MySQLConnectorJarName'}]) -%}
-/home/ubuntu/setup/setup-apim.sh -j /home/ubuntu/jdk-11-linux-x64.tar.gz  -a /home/ubuntu/wso2am.zip -c /home/ubuntu/mysql-connector-java.jar -n ${BackendInstance.PrivateIp} -m ${RDSInstance.Endpoint.Address} -u ${MasterUsername} -p ${MasterUserPassword} -o ubuntu
+  files=[{'name': 'wso2am.zip', 'ref': 'WSO2APIManagerDistributionName'}, {'name': 'jdk-8-linux-x64.tar.gz', 'ref': 'OracleJDKDistributionName'}, {'name': 'mysql-connector-java.jar', 'ref': 'MySQLConnectorJarName'}]) -%}
+/home/ubuntu/setup/setup-apim.sh -j /home/ubuntu/jdk-8-linux-x64.tar.gz  -a /home/ubuntu/wso2am.zip -c /home/ubuntu/mysql-connector-java.jar -n ${BackendInstance.PrivateIp} -m ${RDSInstance.Endpoint.Address} -u ${MasterUsername} -p ${MasterUserPassword} -o ubuntu
 {%- endcall %}
 # Backend
 {% call ec2instance('BackendInstance', 'backend', '!Ref BackendInstanceType',

@@ -23,7 +23,6 @@ export script_name="$0"
 export script_dir=$(dirname "$0")
 
 export wso2am_distribution=""
-export jdk11_distribution=""
 export mysql_connector_jar=""
 export wso2am_ec2_instance_type=""
 export wso2am_rds_db_instance_class=""
@@ -35,7 +34,7 @@ export metrics_file_prefix="apim"
 export run_performance_tests_script_name="run-performance-tests.sh"
 
 function usageCommand() {
-    echo "-a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class> -q <jdk11_distribution>"
+    echo "-a <wso2am_distribution> -c <mysql_connector_jar> -A <wso2am_ec2_instance_type> -D <wso2am_rds_db_instance_class>"
 }
 export -f usageCommand
 
@@ -44,12 +43,11 @@ function usageHelp() {
     echo "-c: MySQL Connector JAR file."
     echo "-A: Amazon EC2 Instance Type for WSO2 API Manager."
     echo "-D: Amazon EC2 DB Instance Class for WSO2 API Manager RDS Instance."
-    echo "-q: JDK 11 Distribution."
 
 }
 export -f usageHelp
 
-while getopts ":u:f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:ha:c:A:D:q:" opt; do
+while getopts ":u:f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:ha:c:A:D:" opt; do
     case "${opt}" in
     a)
         wso2am_distribution=${OPTARG}
@@ -62,9 +60,6 @@ while getopts ":u:f:d:k:n:j:o:g:s:b:r:J:S:N:t:p:w:ha:c:A:D:q:" opt; do
         ;;
     D)
         wso2am_rds_db_instance_class=${OPTARG}
-        ;;
-    q)
-        jdk11_distribution=${OPTARG}
         ;;
     *)
         opts+=("-${opt}")
@@ -82,11 +77,6 @@ function validate() {
 
     export wso2am_distribution_filename=$(basename $wso2am_distribution)
 
-    if [[ ! -f $jdk11_distribution ]]; then
-        echo "Please provide jdk11 distribution."
-        exit 1
-    fi
-    export jdk11_distribution_filename=$(basename $jdk11_distribution)
 
     if [[ ${wso2am_distribution_filename: -4} != ".zip" ]]; then
         echo "WSO2 API Manager distribution must have .zip extension"
@@ -119,10 +109,8 @@ export -f validate
 
 function create_links() {
     wso2am_distribution=$(realpath $wso2am_distribution)
-    jdk11_distribution=$(realpath $jdk11_distribution)
     mysql_connector_jar=$(realpath $mysql_connector_jar)
     ln -s $wso2am_distribution $temp_dir/$wso2am_distribution_filename
-    ln -s $jdk11_distribution $temp_dir/$jdk11_distribution_filename
     ln -s $mysql_connector_jar $temp_dir/$mysql_connector_jar_filename
     
 }
@@ -137,7 +125,6 @@ export -f get_test_metadata
 
 function get_cf_parameters() {
     echo "WSO2APIManagerDistributionName=$wso2am_distribution_filename"
-    echo "JDK11DistributionName=$jdk11_distribution_filename"
     echo "MySQLConnectorJarName=$mysql_connector_jar_filename"
     echo "WSO2APIManagerInstanceType=$wso2am_ec2_instance_type"
     echo "WSO2APIManagerDBInstanceClass=$wso2am_rds_db_instance_class"

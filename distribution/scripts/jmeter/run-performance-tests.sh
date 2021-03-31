@@ -72,7 +72,7 @@ function after_execute_test_scenario() {
     write_server_metrics apim $apim_ssh_host org.wso2.carbon.bootstrap.Bootstrap
     download_file $apim_ssh_host wso2am/repository/logs/wso2carbon.log wso2carbon.log
     download_file $apim_ssh_host wso2am/repository/logs/gc.log apim_gc.log
-    #download_file $apim_ssh_host wso2am/repository/logs/recording.jfr recording.jfr
+    download_file $apim_ssh_host wso2am/repository/logs/recording.jfr recording.jfr
 }
 
 test_scenarios
