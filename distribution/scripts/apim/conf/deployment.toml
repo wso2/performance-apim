@@ -1,8 +1,6 @@
 [server]
 hostname = "localhost"
-node_ip = "127.0.0.1"
 #offset=0
-mode = "single" #single or ha
 base_path = "${carbon.protocol}://${carbon.host}:${carbon.management.port}"
 #discard_empty_caches = false
 server_role = "default"
@@ -34,8 +32,22 @@ password =  "wso2carbon"
 alias =  "wso2carbon"
 key_password =  "wso2carbon"
 
+#[keystore.primary]
+#file_name =  "wso2carbon.jks"
+#type =  "JKS"
+#password =  "wso2carbon"
+#alias =  "wso2carbon"
+#key_password =  "wso2carbon"
+
+#[keystore.internal]
+#file_name =  "wso2carbon.jks"
+#type =  "JKS"
+#password =  "wso2carbon"
+#alias =  "wso2carbon"
+#key_password =  "wso2carbon"
+
 [[apim.gateway.environment]]
-name = "Production and Sandbox"
+name = "Default"
 type = "hybrid"
 display_in_api_console = true
 description = "This is a hybrid gateway that handles both production and sandbox token traffic."
@@ -47,6 +59,9 @@ ws_endpoint = "ws://localhost:9099"
 wss_endpoint = "wss://localhost:8099"
 http_endpoint = "http://localhost:${http.nio.port}"
 https_endpoint = "https://localhost:${https.nio.port}"
+
+[apim.sync_runtime_artifacts.gateway]
+gateway_labels =["Default"]
 
 #[apim.cache.gateway_token]
 #enable = true
@@ -76,24 +91,10 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #[apim.cache.tags]
 #expiry_time = "2m"
 
-#[apim.analytics]
-#enable = false
-#store_api_url = "https://localhost:7444"
-#username = "$ref{super_admin.username}"
-#password = "$ref{super_admin.password}"
-#event_publisher_type = "default"
-#event_publisher_impl = "org.wso2.carbon.apimgt.usage.publisher.APIMgtUsageDataBridgeDataPublisher"
-#publish_response_size = true
-
-#[[apim.analytics.url_group]]
-#analytics_url =["tcp://analytics1:7611","tcp://analytics2:7611"]
-#analytics_auth_url =["ssl://analytics1:7711","ssl://analytics2:7711"]
-#type = "loadbalance"
-
-#[[apim.analytics.url_group]]
-#analytics_url =["tcp://analytics1:7612","tcp://analytics2:7612"]
-#analytics_auth_url =["ssl://analytics1:7712","ssl://analytics2:7712"]
-#type = "failover"
+[apim.analytics]
+enable = false
+config_endpoint = "https://localhost:8080/auth/v1"
+auth_token = ""
 
 #[apim.key_manager]
 #service_url = "https://localhost:${mgt.transport.https.port}/services/"
@@ -106,18 +107,21 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #key_validation_handler_impl = "org.wso2.carbon.apimgt.keymgt.handlers.DefaultKeyValidationHandler"
 
 #[apim.idp]
+#server_url = "https://localhost:${mgt.transport.https.port}"
 #authorize_endpoint = "https://localhost:${mgt.transport.https.port}/oauth2/authorize"
 #oidc_logout_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/logout"
+#oidc_check_session_endpoint = "https://localhost:${mgt.transport.https.port}/oidc/checksession"
 
 #[apim.jwt]
 #enable = true
 #encoding = "base64" # base64,base64url
 #generator_impl = "org.wso2.carbon.apimgt.keymgt.token.JWTGenerator"
 #claim_dialect = "http://wso2.org/claims"
+#convert_dialect = false
 #header = "X-JWT-Assertion"
 #signing_algorithm = "SHA256withRSA"
 #enable_user_claims = true
-#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.DefaultClaimsRetriever"
+#claims_extractor_impl = "org.wso2.carbon.apimgt.impl.token.ExtendedDefaultClaimsRetriever"
 
 #[apim.oauth_config]
 #enable_outbound_auth_header = false
@@ -137,11 +141,14 @@ https_endpoint = "https://localhost:${https.nio.port}"
 #enable_comments = true
 #enable_ratings = true
 #enable_forum = true
+#enable_anonymous_mode=true
+#enable_cross_tenant_subscriptions = true
+#default_reserved_username = "apim_reserved_user"
 
 [apim.cors]
 allow_origins = "*"
 allow_methods = ["GET","PUT","POST","DELETE","PATCH","OPTIONS"]
-allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction"]
+allow_headers = ["authorization","Access-Control-Allow-Origin","Content-Type","SOAPAction","apikey","Internal-Key"]
 allow_credentials = false
 
 #[apim.throttling]
@@ -181,9 +188,9 @@ allow_credentials = false
 #service_url = "https://localhost:9445/bpmn"
 #username = "$ref{super_admin.username}"
 #password = "$ref{super_admin.password}"
-#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/admin/v0.16/workflows/update-workflow-status"
+#callback_endpoint = "https://localhost:${mgt.transport.https.port}/api/am/admin/v0.17/workflows/update-workflow-status"
 #token_endpoint = "https://localhost:${https.nio.port}/token"
-#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.16/register"
+#client_registration_endpoint = "https://localhost:${mgt.transport.https.port}/client-registration/v0.17/register"
 #client_registration_username = "$ref{super_admin.username}"
 #client_registration_password = "$ref{super_admin.password}"
 
@@ -226,3 +233,17 @@ subscriptions=["POST_ADD_USER"]
 
 [service_provider]
 sp_name_regex = "^[\\sa-zA-Z0-9._-]*$"
+
+[database.local]
+url = "jdbc:h2:./repository/database/WSO2CARBON_DB;DB_CLOSE_ON_EXIT=FALSE"
+
+[[event_listener]]
+id = "token_revocation"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "org.wso2.is.notification.ApimOauthEventInterceptor"
+order = 1
+[event_listener.properties]
+notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/data/v1/notify"
+username = "${admin.username}"
+password = "${admin.password}"
+'header.X-WSO2-KEY-MANAGER' = "default"
