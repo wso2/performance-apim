@@ -61,7 +61,7 @@ carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 
 if pgrep -f "$carbon_bootstrap_class" >/dev/null; then
     echo "Shutting down APIM"
-    wso2am/bin/wso2server.sh stop
+    wso2am/bin/api-manager.sh stop
 
     echo "Waiting for API Manager to stop"
     while true; do
@@ -88,9 +88,15 @@ JAVA_COMMAND="$JAVA_HOME/bin/java"
 JAVA_VERSION=$("$JAVA_COMMAND" -version 2>&1 | awk -F '"' '/version/ {print $2}')
 if [[ $JAVA_VERSION =~ ^1\.8.* ]]; then
     export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/wso2am/repository/logs/gc.log"
+    #export JAVA_OPTS="-XX:+PrintGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/home/ubuntu/wso2am/repository/logs/gc.log -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=delay=90s,duration=10m,name=Profiling,filename=/home/ubuntu/wso2am/repository/logs/recording.jfr,settings=profile "
+
+echo "Starting APIM"
+wso2am/bin/api-manager.sh start
+
 else 
     # for jdk11
     export JAVA_OPTS="-Xlog:gc*,safepoint,gc+heap=trace:file=/home/ubuntu/wso2am/repository/logs/gc.log:uptime,utctime,level,tags "
+    #export JAVA_OPTS="-Xlog:gc*,safepoint,gc+heap=trace:file=/home/ubuntu/wso2am/repository/logs/gc.log:uptime,utctime,level,tags -XX:StartFlightRecording=disk=true,delay=120s,duration=10m,name=Profiling,filename=/home/ubuntu/wso2am/repository/logs/recording.jfr,settings=profile,path-to-gc-roots=true "
 fi
 
 # export JAVA_OPTS="-Xlog:gc*,safepoint,gc+heap=trace:file=/home/ubuntu/wso2am/repository/logs/gc.log:uptime,utctime,level,tags "
@@ -101,7 +107,7 @@ fi
 #export JAVA_OPTS="-Xlog:gc*,safepoint,gc+heap=trace:file=/home/ubuntu/wso2am/repository/logs/gc.log:uptime,utctime,level,tags -XX:StartFlightRecording=disk=true,delay=120s,duration=10m,name=Profiling,filename=/home/ubuntu/wso2am/repository/logs/recording.jfr,settings=profile,path-to-gc-roots=true "
 
 echo "Starting APIM"
-wso2am/bin/wso2server.sh start
+wso2am/bin/api-manager.sh start
 
 echo "Waiting for API Manager to start"
 
