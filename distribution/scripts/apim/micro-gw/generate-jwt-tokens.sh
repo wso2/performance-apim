@@ -19,21 +19,26 @@
 
 script_dir=$(dirname "$0")
 tokens_count=""
+consumer_key=""
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -t <tokens_count>"
+    echo "$0 -t <tokens_count> -c <consumer_key>"
     echo ""
-    echo "-t: Count of the Tokens."
+    echo "-t: Count of the tokens."
+    echo "-c: Consumer key relevant to the tokens."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "t:h" opt; do
+while getopts "t:c:h" opt; do
     case "${opt}" in
     t)
         tokens_count=${OPTARG}
+        ;;
+    c)
+        consumer_key=${OPTARG}
         ;;
     h)
         usage
@@ -52,6 +57,11 @@ if [[ -z $tokens_count ]]; then
     exit 1
 fi
 
+if [[ -z $consumer_key ]]; then
+    echo "Please provide the consumer key"
+    exit 1
+fi
+
 mkdir -p "$script_dir/target"
 tokens_file="$script_dir/target/jwt-tokens.csv"
 
@@ -59,10 +69,8 @@ if [[ -f $tokens_file ]]; then
     mv $tokens_file /tmp
 fi
 
-generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/jwt-generator-${performance.apim.version}.jar --api-name "echo" \
-        --context "/echo" --version "1.0.0" --app-name "DefaultApplication" \
-        --app-tier "Unlimited" --subs-tier "Unlimited" --app-id 1 \
-        --key-store-file $script_dir/wso2carbon.jks \
+generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/jwt-generator-${performance.apim.version}.jar \
+        --key-store-file $script_dir/wso2carbon.jks --consumer-key $consumer_key\
         --tokens-count $tokens_count --output-file $tokens_file"
 echo "Generating Tokens: $generate_tokens_command"
 $generate_tokens_command
