@@ -370,12 +370,12 @@ create_api() {
     fi
     if [ ! -z "$out_sequence" ]; then
         echo "Adding mediation policy to $api_name API"
-        local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F type=out -F mediationPolicyFile=@$script_dir/payload/mediation-api-sequence.xml "${base_https_url}/api/am/publisher/v3/apis/${api_id}/mediation-policies" | jq -r '.id')
+        local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F policySpecFile='{"category":"Mediation","name":"mediation-api-sequence","displayName":"mediation-api-sequence","description":"","multipleAllowed":false,"applicableFlows":["response"],"supportedGateways":["Synapse"],"supportedApiTypes":["REST"],"policyAttributes":[]}' -F synapsePolicyDefinitionFile=@$script_dir/payload/perf-mediation.j2 "${base_https_url}/api/am/publisher/v3/operation-policies" | jq -r '.id')
         if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
-            echo "Mediation policy added to $api_name API with ID $sequence_id"
+            echo "Mediation policy added with ID $sequence_id"
             echo -ne "\n"
         else
-            echo "Failed to add mediation policy to $api_name API"
+            echo "Failed to add mediation policy"
             echo -ne "\n"
             return
         fi
@@ -389,7 +389,7 @@ create_api() {
             if [ -n "$api_details" ]; then
                 # Update API with sequence
                 echo "Updating $api_name API to set mediation policy..."
-                api_details=$(echo "$api_details" | jq -r '.mediationPolicies |= [{"name":"mediation-api-sequence","type":"out"}]')
+                api_details=$(echo "$api_details" | jq -r '.operations[0].operationPolicies |= {"request":[],"response":[{"policyName":"mediation-api-sequence","policyId":"'$sequence_id'","order":1,"parameters":{}}],"fault":[]}')
                 break
             fi
             n=$(($n + 1))
