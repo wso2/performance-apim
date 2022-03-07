@@ -1,0 +1,9 @@
+<payloadFactory media-type="json">
+    <format>
+        {"payload":"$1","size":"$2"}
+    </format>
+    <args>
+        <arg expression="$.payload" evaluator="json"></arg>
+        <arg expression="$.size" evaluator="json"></arg>
+    </args>
+</payloadFactory>
