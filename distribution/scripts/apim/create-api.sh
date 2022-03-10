@@ -224,6 +224,9 @@ if [ ! -z $consumer_key ] && [ ! $consumer_key = "null" ]; then
     echo "Keys already generated for \"PerformanceTestAPP\". Consumer key is $consumer_key"
 else
     echo "Keys not generated for \"PerformanceTestAPP\". Generating keys"
+    # temp fix
+    get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v2/key-managers")
+
     # Generate Keys
     keys_response=$($curl_command -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(generate_keys_request)" "${base_https_url}/api/am/devportal/v2/applications/$application_id/generate-keys")
     consumer_key=$(echo $keys_response | jq -r '.consumerKey')
