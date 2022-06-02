@@ -21,30 +21,30 @@ script_dir=$(dirname "$0")
 apim_host=""
 api_name=""
 api_description=""
+graphql_api_schema=""
 backend_endpoint_url=""
 default_backend_endpoint_type="http"
 backend_endpoint_type="$default_backend_endpoint_type"
-out_sequence=""
 token_type="JWT"
 
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -a <apim_host> -n <api_name> -d <api_description> -b <backend_endpoint_url>"
-    echo "   [-t <backend_endpoint_type>] [-o <out_sequence>] [-h]"
+    echo "$0 -a <apim_host> -n <api_name> -d <api_description> -s <graphql_api_schema> -b <backend_endpoint_url>"
+    echo "   [-t <backend_endpoint_type>] [-h]"
     echo ""
     echo "-a: Hostname of WSO2 API Manager."
     echo "-n: API Name."
     echo "-d: API Description."
+    echo "-s: GraphQL schema."
     echo "-b: Backend endpoint URL."
     echo "-t: Backend endpoint type. Default: $default_backend_endpoint_type."
-    echo "-o: Out Sequence."
     echo "-k: Token type."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "a:n:d:b:t:o:k:h" opt; do
+while getopts "a:n:d:s:b:t:k:h" opt; do
     case "${opt}" in
     a)
         apim_host=${OPTARG}
@@ -55,14 +55,14 @@ while getopts "a:n:d:b:t:o:k:h" opt; do
     d)
         api_description=${OPTARG}
         ;;
+    s)
+        graphql_api_schema=${OPTARG}
+        ;;
     b)
         backend_endpoint_url=${OPTARG}
         ;;
     t)
         backend_endpoint_type=${OPTARG}
-        ;;
-    o)
-        out_sequence=${OPTARG}
         ;;
     k)
         token_type=${OPTARG}
@@ -97,6 +97,12 @@ if [[ -z $api_description ]]; then
     echo "Please provide the API description."
     exit 1
 fi
+
+if [[ -z $graphql_api_schema ]]; then
+    echo "Please provide the GraphQL schema definition file."
+    exit 1
+fi
+
 
 if [[ -z $backend_endpoint_url ]]; then
     echo "Please provide the backend endpoint URL."
@@ -253,7 +259,7 @@ echo $consumer_key >"$script_dir/target/consumer_key"
 echo $application_id >"$script_dir/target/application_id"
 echo -ne "\n"
 
-# Create APIs
+# Create GraphQL API
 api_create_request() {
     cat <<EOF
 { 
@@ -274,26 +280,187 @@ api_create_request() {
          "url":"${backend_endpoint_url}"
       }
    },
-   "operations":[ 
-      { 
-         "target":"/*",
-         "verb":"POST",
-         "throttlingPolicy":"Unlimited"
+   "operations":[
+      {
+         "id":"0",
+         "target":"hero",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"1",
+         "target":"reviews",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],"usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"2",
+         "target":"search",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"3",
+         "target":"character",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"4",
+         "target":"droid",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],"usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"5",
+         "target":"human",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"6",
+         "target":"allHumans",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"7",
+         "target":"allDroids",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"8",
+         "target":"allCharacters",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"9",
+         "target":"starship",
+         "verb":"QUERY",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"10",
+         "target":"createReview",
+         "verb":"MUTATION",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
+      },
+      {
+         "id":"11",
+         "target":"reviewAdded",
+         "verb":"SUBSCRIPTION",
+         "authType":"Any",
+         "throttlingPolicy":null,
+         "scopes":[],
+         "usedProductIds":[],
+         "amznResourceName":null,
+         "amznResourceTimeout":null,
+         "payloadSchema":null,
+         "uriMapping":null,
+         "operationPolicies":null
       }
    ]
 }
 EOF
 }
 
-mediation_policy_request() {
-    cat <<EOF
-{
-    "name": "mediation-api-sequence",
-    "type": "out",
-    "config": "$1"
-}
-EOF
-}
+# mediation_policy_request() {
+#     cat <<EOF
+# {
+#     "name": "mediation-api-sequence",
+#     "type": "out",
+#     "config": "$1"
+# }
+# EOF
+# }
 
 subscription_request() {
     cat <<EOF
@@ -308,7 +475,6 @@ EOF
 create_api() {
     local api_name="$1"
     local api_desc="$2"
-    local out_sequence="$3"
     echo "Creating $api_name API..."
     # Check whether API exists
     local existing_api_id=$($curl_command -H "Authorization: Bearer $view_access_token" ${base_https_url}/api/am/publisher/v4/apis?query=name:$api_name\$ | jq -r '.list[0] | .id')
@@ -371,51 +537,51 @@ create_api() {
         echo -ne "\n"
         return
     fi
-    if [ ! -z "$out_sequence" ]; then
-        echo "Adding mediation policy to $api_name API"
-        local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F policySpecFile='{"category":"Mediation","name":"mediation-api-sequence","displayName":"mediation-api-sequence","version":"v1","description":"","multipleAllowed":false,"applicableFlows":["response"],"supportedGateways":["Synapse"],"supportedApiTypes":["HTTP"],"policyAttributes":[]}' -F synapsePolicyDefinitionFile=@$script_dir/payload/perf-mediation.j2 "${base_https_url}/api/am/publisher/v4/operation-policies" | jq -r '.id')
-        if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
-            echo "Mediation policy added with ID $sequence_id"
-            echo -ne "\n"
-        else
-            echo "Failed to add mediation policy"
-            echo -ne "\n"
-            return
-        fi
-        echo "Updating $api_name API to set mediation policy..."
-        local api_details=""
-        n=0
-        until [ $n -ge 50 ]; do
-            sleep 10
-            #Get API
-            api_details="$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v4/apis/${api_id}" || echo "")"
-            if [ -n "$api_details" ]; then
-                # Update API with sequence
-                echo "Updating $api_name API to set mediation policy..."
-                api_details=$(echo "$api_details" | jq -r '.operations[0].operationPolicies |= {"request":[],"response":[{"policyName":"mediation-api-sequence","policyId":"'$sequence_id'","parameters":{}}],"fault":[]}')
-                break
-            fi
-            n=$(($n + 1))
-        done
-        n=0
-        until [ $n -ge 50 ]; do
-            sleep 10
-            local updated_api="$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v4/apis/${api_id}")"
-            local updated_api_id=$(echo "$updated_api" | jq -r '.id')
-            if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
-                echo "Mediation policy is set to $api_name API with ID $updated_api_id"
-                local rev_id_2=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d '{"description": "first revision"}' ${base_https_url}/api/am/publisher/v4/apis/${updated_api_id}/revisions | jq -r '.id')
-                local revisionUuid=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d '[{"name": "Default", "vhost": "localhost" ,"displayOnDevportal": true}]' ${base_https_url}/api/am/publisher/v4/apis/${updated_api_id}/deploy-revision?revisionId=${rev_id_2} | jq -r '.[0] | .revisionUuid')
-                sleep 3
-                break
-            fi
-            n=$(($n + 1))
-        done
-        if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
-            echo "Failed to set mediation policy to $api_name API"
-            return 1
-        fi
-    fi
+    # if [ ! -z "$out_sequence" ]; then
+    #     echo "Adding mediation policy to $api_name API"
+    #     local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F policySpecFile='{"category":"Mediation","name":"mediation-api-sequence","displayName":"mediation-api-sequence","version":"v1","description":"","multipleAllowed":false,"applicableFlows":["response"],"supportedGateways":["Synapse"],"supportedApiTypes":["HTTP"],"policyAttributes":[]}' -F synapsePolicyDefinitionFile=@$script_dir/payload/perf-mediation.j2 "${base_https_url}/api/am/publisher/v4/operation-policies" | jq -r '.id')
+    #     if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
+    #         echo "Mediation policy added with ID $sequence_id"
+    #         echo -ne "\n"
+    #     else
+    #         echo "Failed to add mediation policy"
+    #         echo -ne "\n"
+    #         return
+    #     fi
+    #     echo "Updating $api_name API to set mediation policy..."
+    #     local api_details=""
+    #     n=0
+    #     until [ $n -ge 50 ]; do
+    #         sleep 10
+    #         #Get API
+    #         api_details="$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v4/apis/${api_id}" || echo "")"
+    #         if [ -n "$api_details" ]; then
+    #             # Update API with sequence
+    #             echo "Updating $api_name API to set mediation policy..."
+    #             api_details=$(echo "$api_details" | jq -r '.operations[0].operationPolicies |= {"request":[],"response":[{"policyName":"mediation-api-sequence","policyId":"'$sequence_id'","parameters":{}}],"fault":[]}')
+    #             break
+    #         fi
+    #         n=$(($n + 1))
+    #     done
+    #     n=0
+    #     until [ $n -ge 50 ]; do
+    #         sleep 10
+    #         local updated_api="$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v4/apis/${api_id}")"
+    #         local updated_api_id=$(echo "$updated_api" | jq -r '.id')
+    #         if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
+    #             echo "Mediation policy is set to $api_name API with ID $updated_api_id"
+    #             local rev_id_2=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d '{"description": "first revision"}' ${base_https_url}/api/am/publisher/v4/apis/${updated_api_id}/revisions | jq -r '.id')
+    #             local revisionUuid=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d '[{"name": "Default", "vhost": "localhost" ,"displayOnDevportal": true}]' ${base_https_url}/api/am/publisher/v4/apis/${updated_api_id}/deploy-revision?revisionId=${rev_id_2} | jq -r '.[0] | .revisionUuid')
+    #             sleep 3
+    #             break
+    #         fi
+    #         n=$(($n + 1))
+    #     done
+    #     if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
+    #         echo "Failed to set mediation policy to $api_name API"
+    #         return 1
+    #     fi
+    # fi
     echo "Subscribing $api_name API to PerformanceTestAPP"
     local subscription_id=$($curl_command -H "Authorization: Bearer $sub_manage_token" -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/devportal/v3/subscriptions" | jq -r '.subscriptionId')
     if [ ! -z $subscription_id ] && [ ! $subscription_id = "null" ]; then
@@ -428,4 +594,4 @@ create_api() {
     fi
 }
 
-create_api "$api_name" "$api_description" "$out_sequence"
+create_api "$api_name" "$api_description"

@@ -38,22 +38,12 @@ function initialize() {
 export -f initialize
 
 declare -A test_scenario0=(
-    [name]="passthrough"
-    [display_name]="Passthrough"
-    [description]="A secured API, which directly invokes the back-end service."
-    [jmx]="apim-test.jmx"
+    [name]="starwars"
+    [display_name]="StarwarsGraphqlApi"
+    [description]="A secured GraphQL API, which directly invokes the backend service."
+    [jmx]="apim-graphql-test.jmx"
     [protocol]="https"
-    [path]="/echo/1.0.0"
-    [use_backend]=true
-    [skip]=false
-)
-declare -A test_scenario1=(
-    [name]="transformation"
-    [display_name]="Transformation"
-    [description]="A secured API, which has a mediation extension to modify the message."
-    [jmx]="apim-test.jmx"
-    [protocol]="https"
-    [path]="/mediation/1.0.0"
+    [path]="/starwars/1.0.0"
     [use_backend]=true
     [skip]=false
 )
