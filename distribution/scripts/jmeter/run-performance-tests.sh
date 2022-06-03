@@ -20,6 +20,7 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
+graphql_query=""
 # Execute common script
 . $script_dir/perf-test-common.sh
 
@@ -51,9 +52,21 @@ declare -A test_scenario0=(
 function before_execute_test_scenario() {
     local service_path=${scenario[path]}
     local protocol=${scenario[protocol]}
+
+    if [ "$queryNumber" == 1 ]; then
+        graphql_query="query q1 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } }"
+    elif [ "$queryNumber" == 2 ]; then
+        graphql_query="query q2 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } search (text: &quot;Luke Skywalker&quot;) { ... on Human { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } ... on Droid { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } ... on Starship { id name length coordinates } } character (id: &quot;1000&quot;) { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } droid (id: &quot;2000&quot;){ id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } }"
+    elif [ "$queryNumber" == 3 ]; then
+        graphql_query="query q3 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } search (text: &quot;Luke Skywalker&quot;) { ... on Human { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } ... on Droid { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } ... on Starship { id name length coordinates } } character (id: &quot;1000&quot;) { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } droid (id: &quot;2000&quot;){ id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } human (id: &quot;1000&quot;) { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } allHumans { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } allDroids { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } allCharacters { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } starship (id: &quot;3000&quot;) { id name length coordinates } }"
+    else
+        echo "Provided query number is not valid."
+        exit 1
+    fi
+
     jmeter_params+=("host=$apim_host" "port=8243" "path=$service_path")
-    jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
-        tokens="$HOME/tokens.csv")
+    jmeter_params+=("query_number=${queryNumber}" "protocol=$protocol" "tokens=$HOME/tokens.csv"
+            "query=${graphql_query}")
     echo "Starting APIM service"
     ssh $apim_ssh_host "./apim/apim-start.sh -m $heap"
 }

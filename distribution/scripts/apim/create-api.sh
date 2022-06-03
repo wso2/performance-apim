@@ -514,7 +514,7 @@ create_api() {
             return
         fi
     fi
-    local api_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -d "$(api_create_request $api_name $api_desc)" ${base_https_url}/api/am/publisher/v4/apis | jq -r '.id')
+    local api_id=$($curl_command -H "Authorization: Bearer $create_access_token" -F file=@$script_dir/schema/starwars-schema.graphql -d "$(api_create_request $api_name $api_desc)" ${base_https_url}/api/am/publisher/v4/apis | jq -r '.id')
     if [ ! -z $api_id ] && [ ! $api_id = "null" ]; then
         echo "Created $api_name API with ID $api_id"
         echo -ne "\n"

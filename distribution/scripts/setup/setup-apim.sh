@@ -172,7 +172,7 @@ function setup() {
     sudo -u $os_user $script_dir/../apim/apim-start.sh -m 1G
 
     # Create APIs in Local API Manager
-    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "starwarsGraphqlApi" -d "GraphQL API" -b "http://${netty_host}:8688/" -k $token_type
+    sudo -u $os_user $script_dir/../apim/create-api.sh -a localhost -n "starwars" -d "GraphQL API" -b "http://${netty_host}:8688/" -k $token_type
 
     if [ "$token_type" == "JWT" ]; then
         tokens_csv="$script_dir/../apim/target/tokens.csv"

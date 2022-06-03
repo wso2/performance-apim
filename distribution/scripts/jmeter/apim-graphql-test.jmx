@@ -51,7 +51,7 @@
             </elementProp>
             <elementProp name="" elementType="Header">
               <stringProp name="Header.name">query-number</stringProp>
-              <stringProp name="Header.value">${__P(queryNumber)}</stringProp>
+              <stringProp name="Header.value">${__P(query_number)}</stringProp>
             </elementProp>
           </collectionProp>
         </HeaderManager>
