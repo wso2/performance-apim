@@ -21,7 +21,6 @@ script_dir=$(dirname "$0")
 apim_host=""
 api_name=""
 api_description=""
-graphql_api_schema=""
 backend_endpoint_url=""
 default_backend_endpoint_type="http"
 backend_endpoint_type="$default_backend_endpoint_type"
@@ -30,13 +29,12 @@ token_type="JWT"
 function usage() {
     echo ""
     echo "Usage: "
-    echo "$0 -a <apim_host> -n <api_name> -d <api_description> -s <graphql_api_schema> -b <backend_endpoint_url>"
+    echo "$0 -a <apim_host> -n <api_name> -d <api_description> -b <backend_endpoint_url>"
     echo "   [-t <backend_endpoint_type>] [-h]"
     echo ""
     echo "-a: Hostname of WSO2 API Manager."
     echo "-n: API Name."
     echo "-d: API Description."
-    echo "-s: GraphQL schema."
     echo "-b: Backend endpoint URL."
     echo "-t: Backend endpoint type. Default: $default_backend_endpoint_type."
     echo "-k: Token type."
@@ -44,7 +42,7 @@ function usage() {
     echo ""
 }
 
-while getopts "a:n:d:s:b:t:k:h" opt; do
+while getopts "a:n:d:b:t:k:h" opt; do
     case "${opt}" in
     a)
         apim_host=${OPTARG}
@@ -54,9 +52,6 @@ while getopts "a:n:d:s:b:t:k:h" opt; do
         ;;
     d)
         api_description=${OPTARG}
-        ;;
-    s)
-        graphql_api_schema=${OPTARG}
         ;;
     b)
         backend_endpoint_url=${OPTARG}
@@ -97,12 +92,6 @@ if [[ -z $api_description ]]; then
     echo "Please provide the API description."
     exit 1
 fi
-
-if [[ -z $graphql_api_schema ]]; then
-    echo "Please provide the GraphQL schema definition file."
-    exit 1
-fi
-
 
 if [[ -z $backend_endpoint_url ]]; then
     echo "Please provide the backend endpoint URL."
