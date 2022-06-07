@@ -130,23 +130,6 @@ function validate() {
 }
 export -f validate
 
-# function mediation_out_sequence() {
-#     cat <<EOF
-# <sequence xmlns=\"http://ws.apache.org/ns/synapse\" name=\"mediation-api-sequence\">
-#     <payloadFactory media-type=\"json\">
-#         <format>
-#             {\"payload\":\"\$1\",\"size\":\"\$2\"}
-#         </format>
-#         <args>
-#             <arg expression=\"\$.payload\" evaluator=\"json\"></arg>
-#             <arg expression=\"\$.size\" evaluator=\"json\"></arg>
-#         </args>
-#     </payloadFactory>
-# </sequence>
-# EOF
-# }
-# export -f mediation_out_sequence
-
 function setup() {
     install_dir=/home/$os_user
     $script_dir/../java/install-java.sh -f $oracle_jdk_dist -u $os_user
