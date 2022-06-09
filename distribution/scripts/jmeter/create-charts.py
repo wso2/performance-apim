@@ -29,7 +29,7 @@ df = pd.read_csv('summary.csv')
 # Filter errors
 df = df.loc[df['Error Count'] < 100]
 # Format GraphQL query number values
-df['GraphQL Query Number'] = df['GraphQL Query Number'].map(apimchart.format_bytes)
+df['GraphQL Query Number'] = df['GraphQL Query Number'].map(apimchart.format_query_number)
 
 unique_sleep_times = df['Back-end Service Delay (ms)'].unique()
 unique_query_numbers = df['GraphQL Query Number'].unique()
@@ -102,6 +102,6 @@ for sleep_time in unique_sleep_times:
                                                     + "ms backend delay", kind='bar')
     for query_number in unique_query_numbers:
         save_bar_chart(
-            "Response Time Summary for GraphQL query number " + query_number + " with " + str(sleep_time) + "ms backend delay")
+            "Response Time Summary for Query " + query_number + " with " + str(sleep_time) + "ms backend delay")
 
 print("Done")
