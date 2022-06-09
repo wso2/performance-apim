@@ -55,7 +55,7 @@ atexit.register(save_charts_details)
 
 
 def save_multi_columns_categorical_charts(df, chart, columns, y, hue, title, single_statistic=False,
-                                          single_statistic_name=None, kind='point', col='Message Size (Bytes)'):
+                                          single_statistic_name=None, kind='point', col='GraphQL Query Number'):
     filename = chart + ".png"
     print("Creating chart: " + title + ", File name: " + filename)
     add_chart_details(title, filename)

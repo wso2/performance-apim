@@ -28,11 +28,11 @@ sns.set_style("darkgrid")
 df = pd.read_csv('summary.csv')
 # Filter errors
 df = df.loc[df['Error Count'] < 100]
-# Format message size values
-df['Message Size (Bytes)'] = df['Message Size (Bytes)'].map(apimchart.format_bytes)
+# Format GraphQL query number values
+df['GraphQL Query Number'] = df['GraphQL Query Number'].map(apimchart.format_bytes)
 
 unique_sleep_times = df['Back-end Service Delay (ms)'].unique()
-unique_message_sizes = df['Message Size (Bytes)'].unique()
+unique_query_numbers = df['GraphQL Query Number'].unique()
 
 
 def save_line_chart(chart, column, title, ylabel=None):
@@ -40,29 +40,29 @@ def save_line_chart(chart, column, title, ylabel=None):
     print("Creating chart: " + title + ", File name: " + filename)
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
-    sns_plot = sns.pointplot(x="Concurrent Users", y=column, hue="Message Size (Bytes)",
+    sns_plot = sns.pointplot(x="Concurrent Users", y=column, hue="GraphQL Query Number",
                              data=df.loc[df['Back-end Service Delay (ms)'] == sleep_time], ci=None, dodge=True)
     ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
     if ylabel is None:
         ylabel = column
     sns_plot.set(ylabel=ylabel)
-    plt.legend(loc=2, frameon=True, title="Message Size")
+    plt.legend(loc=2, frameon=True, title="GraphQL Query")
     plt.savefig(filename)
     plt.clf()
     plt.close(fig)
 
 
 def save_bar_chart(title):
-    filename = "response_time_summary_" + message_size + "_" + str(sleep_time) + "ms.png"
+    filename = "response_time_summary_" + query_number + "_" + str(sleep_time) + "ms.png"
     print("Creating chart: " + title + ", File name: " + filename)
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 6)
-    df_results = df.loc[(df['Message Size (Bytes)'] == message_size) & (df['Back-end Service Delay (ms)'] == sleep_time)]
+    df_results = df.loc[(df['GraphQL Query Number'] == query_number) & (df['Back-end Service Delay (ms)'] == sleep_time)]
     df_results = df_results[
-        ['Message Size (Bytes)', 'Concurrent Users', 'Minimum Response Time (ms)', '90th Percentile of Response Time (ms)', '95th Percentile of Response Time (ms)',
+        ['GraphQL Query Number', 'Concurrent Users', 'Minimum Response Time (ms)', '90th Percentile of Response Time (ms)', '95th Percentile of Response Time (ms)',
          '99th Percentile of Response Time (ms)', 'Maximum Response Time (ms)']]
-    df_results = df_results.set_index(['Message Size (Bytes)', 'Concurrent Users']).stack().reset_index().rename(
+    df_results = df_results.set_index(['GraphQL Query Number', 'Concurrent Users']).stack().reset_index().rename(
         columns={'level_2': 'Summary', 0: 'Response Time (ms)'})
     sns.barplot(x='Concurrent Users', y='Response Time (ms)', hue='Summary', data=df_results, ci=None)
     ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
@@ -100,8 +100,8 @@ for sleep_time in unique_sleep_times:
                                                     "Response Time (ms)", "Response Time",
                                                     "Response Time Percentiles with " + str(sleep_time)
                                                     + "ms backend delay", kind='bar')
-    for message_size in unique_message_sizes:
+    for query_number in unique_query_numbers:
         save_bar_chart(
-            "Response Time Summary for " + message_size + " message size with " + str(sleep_time) + "ms backend delay")
+            "Response Time Summary for GraphQL query number " + query_number + " with " + str(sleep_time) + "ms backend delay")
 
 print("Done")

@@ -81,7 +81,7 @@ def read_summary_csv_files():
     df_all = df_merge.copy()
     df_all.insert(0, 'Name', names[0])
 
-    keys = ['Message Size (Bytes)', 'Sleep Time (ms)', 'Concurrent Users']
+    keys = ['GraphQL Query Number', 'Sleep Time (ms)', 'Concurrent Users']
 
     for i in range(1, summary_count):
         print("Reading " + summary_files[i] + " with name " + names[i] + " to merge and append")
@@ -105,15 +105,15 @@ def read_summary_csv_files():
     # Save all data frame
     df_all.to_csv('all_results.csv')
 
-    # Format message size values
-    df_merge['Message Size (Bytes)'] = df_merge['Message Size (Bytes)'].map(apimchart.format_bytes)
+    # Format query number values
+    df_merge['GraphQL Query Number'] = df_merge['GraphQL Query Number'].map(apimchart.format_bytes)
     return df_merge, df_all
 
 
 def save_lmplots(df_all):
     # Save lmplots
-    xcolumns = ['Message Size (Bytes)', 'Sleep Time (ms)', 'Concurrent Users']
-    xcharts = ['message_size', 'sleep_time', 'concurrent_users']
+    xcolumns = ['GraphQL Query Number', 'Sleep Time (ms)', 'Concurrent Users']
+    xcharts = ['query_number', 'sleep_time', 'concurrent_users']
     ycolumns = ['Throughput', 'Average (ms)', 'Max (ms)', '90th Percentile (ms)', '95th Percentile (ms)',
                 '99th Percentile (ms)', 'API Manager GC Throughput (%)', 'API Manager Load Average - Last 1 minute',
                 'API Manager Load Average - Last 5 minutes', 'API Manager Load Average - Last 15 minutes']
@@ -134,15 +134,15 @@ def save_lmplots(df_all):
 
 def save_point_plots(df_all):
     unique_sleep_times_in_df_all = df_all['Sleep Time (ms)'].unique()
-    unique_message_sizes_in_df_all = df_all['Message Size (Bytes)'].unique()
+    unique_query_numbers_in_df_all = df_all['GraphQL Query Number'].unique()
 
     for sleep_time in unique_sleep_times_in_df_all:
-        for message_size in unique_message_sizes_in_df_all:
+        for query_number in unique_query_numbers_in_df_all:
             df_filtered = df_all.loc[
-                (df_all['Message Size (Bytes)'] == message_size) & (df_all['Sleep Time (ms)'] == sleep_time)]
-            chart_suffix = '_' + apimchart.format_time(sleep_time) + '_' + apimchart.format_bytes(message_size)
+                (df_all['GraphQL Query Number'] == query_number) & (df_all['Sleep Time (ms)'] == sleep_time)]
+            chart_suffix = '_' + apimchart.format_time(sleep_time) + '_' + apimchart.format_bytes(query_number)
             title_suffix = ' vs Concurrent Users for ' + apimchart.format_bytes(
-                message_size) + ' messages with ' + apimchart.format_time(sleep_time) + ' backend delay'
+                query_number) + ' GraphQL query with ' + apimchart.format_time(sleep_time) + ' backend delay'
             ycolumns = ['Throughput', 'Average (ms)', 'Max (ms)', '90th Percentile (ms)', '95th Percentile (ms)',
                         '99th Percentile (ms)', 'API Manager GC Throughput (%)']
             charts = ['throughput', 'average_time', 'max_time', 'p90', 'p95', 'p99', 'gc_throughput']
@@ -163,23 +163,23 @@ def save_multi_columns_categorical_charts(df, chart, sleep_time, columns, y, hue
                                                     title, len(columns) == 1, columns[0], kind)
 
 
-def save_bar_plot(df, chart, sleep_time, message_size, columns, y, hue, title):
+def save_bar_plot(df, chart, sleep_time, query_number, columns, y, hue, title):
     comparison_columns = []
     for column in columns:
         for name in names:
             comparison_columns.append(add_suffix(column, name))
-    df_results = df.loc[(df['Message Size (Bytes)'] == message_size) & (df['Sleep Time (ms)'] == sleep_time)]
-    all_columns = ['Message Size (Bytes)', 'Concurrent Users']
+    df_results = df.loc[(df['GraphQL Query Number'] == query_number) & (df['Sleep Time (ms)'] == sleep_time)]
+    all_columns = ['GraphQL Query Number', 'Concurrent Users']
     all_columns.extend(comparison_columns)
     df_results = df_results[all_columns]
-    df_results = df_results.set_index(['Message Size (Bytes)', 'Concurrent Users']).stack().reset_index().rename(
+    df_results = df_results.set_index(['GraphQL Query Number', 'Concurrent Users']).stack().reset_index().rename(
         columns={'level_2': hue, 0: y})
     apimchart.save_bar_plot(df_results, chart, 'Concurrent Users', y, title, hue=hue)
 
 
 def save_comparison_plots(df):
     unique_sleep_times_in_df = df['Sleep Time (ms)'].unique()
-    unique_message_sizes_in_df = df['Message Size (Bytes)'].unique()
+    unique_query_numbers_in_df = df['GraphQL Query Number'].unique()
 
     for sleep_time in unique_sleep_times_in_df:
         save_multi_columns_categorical_charts(df, "comparison_thrpt", sleep_time, ['Throughput'],
@@ -209,15 +209,15 @@ def save_comparison_plots(df):
         save_multi_columns_categorical_charts(df, "comparison_gc", sleep_time, ['API Manager GC Throughput (%)'],
                                               "GC Throughput (%)", "API Manager",
                                               "GC Throughput with " + str(sleep_time) + "ms backend delay")
-        for message_size in unique_message_sizes_in_df:
-            chart_suffix = '_' + apimchart.format_time(sleep_time) + '_' + message_size
-            title_suffix = " for " + message_size + " messages with " + apimchart.format_time(
+        for query_number in unique_query_numbers_in_df:
+            chart_suffix = '_' + apimchart.format_time(sleep_time) + '_' + query_number
+            title_suffix = " for GraphQL query number " + query_number + " with " + apimchart.format_time(
                 sleep_time) + " backend delay"
-            save_bar_plot(df, 'response_time' + chart_suffix, sleep_time, message_size,
+            save_bar_plot(df, 'response_time' + chart_suffix, sleep_time, query_number,
                           ['90th Percentile (ms)', '95th Percentile (ms)', '99th Percentile (ms)'],
                           'Response Time (ms)', 'Summary',
                           "Response Time Percentiles" + title_suffix)
-            save_bar_plot(df, 'loadavg' + chart_suffix, sleep_time, message_size,
+            save_bar_plot(df, 'loadavg' + chart_suffix, sleep_time, query_number,
                           ['API Manager Load Average - Last 1 minute',
                            'API Manager Load Average - Last 5 minutes',
                            'API Manager Load Average - Last 15 minutes'],
@@ -226,45 +226,45 @@ def save_comparison_plots(df):
 
 
 def merge_all_sleep_time_and_concurrent_users(df):
-    unique_message_sizes = df['Message Size (Bytes)'].unique()
+    unique_query_numbers = df['GraphQL Query Number'].unique()
     keys = ['Sleep Time (ms)', 'Concurrent Users']
 
-    first_message_size = unique_message_sizes[0]
-    other_message_sizes = unique_message_sizes[1:]
+    first_query_number = unique_query_numbers[0]
+    other_query_numbers = unique_query_numbers[1:]
 
-    print("Creating DataFrame with " + first_message_size + " message size")
-    df_merge = df[df['Message Size (Bytes)'] == first_message_size]
-    del df_merge['Message Size (Bytes)']
+    print("Creating DataFrame with query number " + first_query_number)
+    df_merge = df[df['GraphQL Query Number'] == first_query_number]
+    del df_merge['GraphQL Query Number']
 
-    for message_size, i in zip(other_message_sizes, range(0, len(other_message_sizes))):
-        print("Merging data for " + message_size + " message size")
-        df_filtered = df[df['Message Size (Bytes)'] == message_size]
-        del df_filtered['Message Size (Bytes)']
-        if i == len(other_message_sizes) - 1:
+    for query_number, i in zip(other_query_numbers, range(0, len(other_query_numbers))):
+        print("Merging data for query number " + query_number)
+        df_filtered = df[df['GraphQL Query Number'] == query_number]
+        del df_filtered['GraphQL Query Number']
+        if i == len(other_query_numbers) - 1:
             # Add suffixes to new right columns. Add suffixes to left columns using the first summary name
-            suffixes = [add_suffix('', first_message_size),
-                        add_suffix('', message_size)]
+            suffixes = [add_suffix('', first_query_number),
+                        add_suffix('', query_number)]
         else:
             # Add suffixes to new right columns. Keep the left column names unchanged till the last summary file.
-            suffixes = ['', add_suffix('', message_size)]
+            suffixes = ['', add_suffix('', query_number)]
         # Merge
         df_merge = df_merge.merge(df_filtered, on=keys, how='outer', suffixes=suffixes)
     return df_merge
 
 
-def save_single_comparison_plots_by_sleep_time(df, chart, unique_message_sizes, columns, y, hue, title, kind='point'):
+def save_single_comparison_plots_by_sleep_time(df, chart, unique_query_numbers, columns, y, hue, title, kind='point'):
     comparison_columns = []
     for column in columns:
         for name in names:
-            for message_size in unique_message_sizes:
-                comparison_columns.append(add_suffix(add_suffix(column, name), message_size))
+            for query_number in unique_query_numbers:
+                comparison_columns.append(add_suffix(add_suffix(column, name), query_number))
     apimchart.save_multi_columns_categorical_charts(df, chart, comparison_columns, y, hue, title, len(columns) == 1,
                                                     columns[0], col='Sleep Time (ms)', kind=kind)
 
 
 def save_single_comparison_plots(df):
     df_merge = merge_all_sleep_time_and_concurrent_users(df)
-    unique_message_sizes = df['Message Size (Bytes)'].unique()
+    unique_query_numbers = df['GraphQL Query Number'].unique()
     chart_prefix = 'comparison_'
     charts = ['thrpt', 'avgt', 'response_time', 'loadavg', 'network', 'gc']
     # Removed '90th Percentile (ms)'. Too much data points
@@ -279,7 +279,7 @@ def save_single_comparison_plots(df):
     plot_kinds = ['point', 'point', 'bar', 'point', 'point', 'point']
     for chart, columns, y, title_prefix, plot_kind in zip(charts, comparison_columns, ycolumns, title_prefixes,
                                                           plot_kinds):
-        save_single_comparison_plots_by_sleep_time(df_merge, chart_prefix + chart, unique_message_sizes, columns, y,
+        save_single_comparison_plots_by_sleep_time(df_merge, chart_prefix + chart, unique_query_numbers, columns, y,
                                                    'API Manager', title_prefix + ' vs Concurrent Users', kind=plot_kind)
 
 
