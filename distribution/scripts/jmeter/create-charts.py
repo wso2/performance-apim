@@ -47,7 +47,7 @@ def save_line_chart(chart, column, title, ylabel=None):
     if ylabel is None:
         ylabel = column
     sns_plot.set(ylabel=ylabel)
-    plt.legend(loc=2, frameon=True, title="GraphQL Query")
+    plt.legend(loc="lower center", frameon=True, title="GraphQL Query")
     plt.savefig(filename)
     plt.clf()
     plt.close(fig)
@@ -82,24 +82,6 @@ for sleep_time in unique_sleep_times:
     save_line_chart("gc", "WSO2 API Manager GC Throughput (%)",
                     "GC Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="GC Throughput (%)")
-    df_results = df.loc[df['Back-end Service Delay (ms)'] == sleep_time]
-    chart_suffix = "_" + str(sleep_time) + "ms"
-    apimchart.save_multi_columns_categorical_charts(df_results, "loadavg" + chart_suffix,
-                                                    ['WSO2 API Manager - System Load Average - Last 1 minute',
-                                                     'WSO2 API Manager - System Load Average - Last 5 minutes',
-                                                     'WSO2 API Manager - System Load Average - Last 15 minutes'],
-                                                    "Load Average", "API Manager",
-                                                    "Load Average with " + str(sleep_time) + "ms backend delay")
-    apimchart.save_multi_columns_categorical_charts(df_results, "network" + chart_suffix,
-                                                    ['Received (KB/sec)', 'Sent (KB/sec)'],
-                                                    "Network Throughput (KB/sec)", "Network",
-                                                    "Network Throughput with " + str(sleep_time) + "ms backend delay")
-    apimchart.save_multi_columns_categorical_charts(df_results, "response_time" + chart_suffix,
-                                                    ['90th Percentile of Response Time (ms)', '95th Percentile of Response Time (ms)',
-                                                     '99th Percentile of Response Time (ms)'],
-                                                    "Response Time (ms)", "Response Time",
-                                                    "Response Time Percentiles with " + str(sleep_time)
-                                                    + "ms backend delay", kind='bar')
     for query_number in unique_query_numbers:
         save_bar_chart(
             "Response Time Summary for Query " + query_number + " with " + str(sleep_time) + "ms backend delay")
