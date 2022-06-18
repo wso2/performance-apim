@@ -65,7 +65,7 @@ function before_execute_test_scenario() {
     fi
 
     jmeter_params+=("host=$apim_host" "port=8243" "path=$service_path")
-    jmeter_params+=("query_number=${queryNumber}" "protocol=$protocol" "tokens=$HOME/tokens.csv" "query=${graphql_query}")
+    jmeter_params+=("query_number=${queryNumber}" "protocol=$protocol" "tokens=$HOME/tokens.csv" "query=\"${graphql_query}\"")
     echo "Starting APIM service"
     ssh $apim_ssh_host "./apim/apim-start.sh -m $heap"
 }
