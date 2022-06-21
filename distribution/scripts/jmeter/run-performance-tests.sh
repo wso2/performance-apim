@@ -54,7 +54,7 @@ function before_execute_test_scenario() {
     local protocol=${scenario[protocol]}
 
     if [ "$queryNumber" == 1 ]; then
-        graphql_query='query q1 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } }'
+        graphql_query='query\ q1\ {\ hero\ {\ id\ name\ friends\ {\ id\ name\ appearsIn\ }\ friendsConnection\ {\ totalCount\ }\ appearsIn\ }\ }'
     elif [ "$queryNumber" == 2 ]; then
         graphql_query='query q2 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } search (text: &quot;Luke Skywalker&quot;) { ... on Human { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } ... on Droid { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } ... on Starship { id name length coordinates } } character (id: &quot;1000&quot;) { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } droid (id: &quot;2000&quot;){ id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } }'
     elif [ "$queryNumber" == 3 ]; then
