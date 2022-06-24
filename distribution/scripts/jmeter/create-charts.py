@@ -39,16 +39,18 @@ def save_line_chart(chart, column, title, ylabel=None):
     filename = chart + "_" + str(sleep_time) + "ms.png"
     print("Creating chart: " + title + ", File name: " + filename)
     fig, ax = plt.subplots()
+    fig.subplots_adjust(bottom=0.3)
     fig.set_size_inches(8, 6)
     sns_plot = sns.pointplot(x="Concurrent Users", y=column, hue="GraphQL Query Number",
                              data=df.loc[df['Back-end Service Delay (ms)'] == sleep_time], ci=None, dodge=True)
-    ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
+    # ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
+    # plt.title("Memory = " + df['Heap Size'][0] + ", Backend Service Delay = " + backendDelay + "ms")
     if ylabel is None:
         ylabel = column
     sns_plot.set(ylabel=ylabel)
-    plt.legend(loc="lower center", frameon=True, title="GraphQL Query")
-    plt.savefig(filename)
+    plt.legend(loc="lower center", frameon=True, title="GraphQL Query", bbox_to_anchor=(0.5, -0.4))
+    plt.savefig(filename, dpi=1200)
     plt.clf()
     plt.close(fig)
 
@@ -68,22 +70,21 @@ def save_bar_chart(title):
     ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
     plt.legend(loc=2, frameon=True, title="Response Time Summary")
-    plt.savefig(filename)
+    plt.savefig(filename, dpi=1200)
     plt.clf()
     plt.close(fig)
 
 
 for sleep_time in unique_sleep_times:
-    save_line_chart("thrpt", "Throughput (Requests/sec)", "Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
+    save_line_chart("thrpt", "Throughput (Requests/sec)", "Throughput (Requests/sec) vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="Throughput (Requests/sec)")
     save_line_chart("avgt", "Average Response Time (ms)",
-                    "Average Response Time vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
+                    "Average Response Time (ms) vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="Average Response Time (ms)")
     save_line_chart("gc", "WSO2 API Manager GC Throughput (%)",
                     "GC Throughput vs Concurrent Users for " + str(sleep_time) + "ms backend delay",
                     ylabel="GC Throughput (%)")
     for query_number in unique_query_numbers:
-        save_bar_chart(
-            "Response Time Summary for Query " + query_number + " with " + str(sleep_time) + "ms backend delay")
+        save_bar_chart("Response Time Summary for\n" + query_number)
 
 print("Done")
