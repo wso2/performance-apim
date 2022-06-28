@@ -115,10 +115,10 @@ public class JWTGenerator {
                 jwtTokenInfo.put("sub", "admin@carbon.super");
                 jwtTokenInfo.put("scope", "am_application_scope default");
                 jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
-                jwtTokenInfo.put("keytype", "PRODUCTION");
+                jwtTokenInfo.put("aut", "APPLICATION");
                 jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                         + VALIDITY_PERIOD);
-                jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));        
+                jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
                 jwtTokenInfo.put("azp", consumerKey);
