@@ -88,8 +88,8 @@ public class JWTGenerator {
         long startTime = System.nanoTime();
 
         JSONObject head = new JSONObject();
-        head.put("x5t", "N2JjMjNiM2ExYjRkNzZjZmY1YTAxNmFlNjg4OWU1YWQ2Yzc1NmY5NQ");
-        head.put("kid", "MDJlNjIxN2E1OGZlOGVmMGQxOTFlMzBmNmFjZjQ0Y2YwOGY0N2I0YzE4YzZjNjRhYmRmMmQ0ODdiNDhjMGEwMA_RS256");
+        head.put("x5t", "NTdmZjM4ZDk3NjY0Yzc5MmZmODgwMTE3MWYwNDE5MWRlZDg4Nzc4ZA");
+        head.put("kid", "MzYxMmFkOGYwMWI0ZWNmNDcxNGYwYmM4ZTA3MWI2NDAzZGQzNGM0ZGRlNjJkODFkZDRiOTFkMWFhMzU2ZGVlNg_RS256");
         head.put("alg", "RS256");
         
         String header = head.toString();
@@ -115,7 +115,7 @@ public class JWTGenerator {
                 jwtTokenInfo.put("sub", "admin@carbon.super");
                 jwtTokenInfo.put("scope", "am_application_scope default");
                 jwtTokenInfo.put("iss", "https://localhost:9443/oauth2/token");
-                jwtTokenInfo.put("keytype", "PRODUCTION");
+                jwtTokenInfo.put("aut", "APPLICATION");
                 jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                         + VALIDITY_PERIOD);
                 jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
