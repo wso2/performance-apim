@@ -1,0 +1,15 @@
+query q1 {
+	hero {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+}

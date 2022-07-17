@@ -1,0 +1,86 @@
+query q2 {
+	hero {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+	search (text: "Luke Skywalker") {
+    ... on Human {
+      id
+      name
+      homePlanet
+      height
+      mass
+      friends {
+        id
+        name
+        appearsIn
+      }
+      friendsConnection {
+        totalCount
+      }
+      appearsIn
+      starships {
+        id
+        name
+        length
+        coordinates
+      }
+    }
+    ... on Droid {
+      id
+      name
+      friends {
+        id
+        name
+        appearsIn
+      }
+      friendsConnection {
+        totalCount
+      }
+      appearsIn
+      primaryFunction
+    }
+    ... on Starship {
+      id
+      name
+      length
+      coordinates
+    }
+  }
+  character (id: "1000") {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+  droid (id: "2000"){
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+    primaryFunction
+  }
+}
