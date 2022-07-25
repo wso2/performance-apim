@@ -1,0 +1,4 @@
+WARNING: sun.reflect.Reflection.getCallerClass is not supported. This will impact performance.
+2022-07-21 10:27:02,414 INFO  [main] echo.EchoHttpServer (EchoHttpServer.java:118) - Echo HTTP/1.1 Server. Port: 8688, Boss Threads: 8, Worker Threads: 16, SSL Enabled: false, Sleep Time: 0ms
+2022-07-21 10:27:02,419 INFO  [main] echo.EchoHttpServer (EchoHttpServer.java:121) - Max Heap Size: 4096MB
+2022-07-21 10:27:02,424 INFO  [main] echo.EchoHttpServer (EchoHttpServer.java:124) - Netty Version: 4.1.36.Final
