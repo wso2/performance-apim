@@ -26,6 +26,7 @@ The [netty-service](netty-service) directory has the netty service artifacts whi
 
 2. Run the `create-apps.sh` to create applications and generate keys in the Developer Portal. The consumer key, consumer secret of each application will be written to `target/client_credentials.csv` file. The application names will have "app" as the prefix followed by a number such as app1, app2, app3.
 
+```
 Usage:
 ./create-apps.sh -a <apim_host> -n <no_of_apps> -k <token_type> [-h]
 
@@ -36,9 +37,11 @@ Usage:
 
 Example Usage:
     ./create-apps.sh -a 54.218.43.40 -n 5 -k JWT
+```
 
 3. Run the `create-api.sh` to create, deploy and publish APIs in the Publisher Portal and subscribe the created APIs to applications.
 
+```
 Usage:
 ./create-apps.sh -a <apim_host> -i <no_of_apis> -n <api_name_prefix> -d <api_description_prefix> -b <backend_endpoint_url> [-t <backend_endpoint_type>] [-h]
 
@@ -51,20 +54,27 @@ Usage:
 -h: Display this help and exit.
 
 Example Usage:
-    ./create-api.sh -a 54.218.43.40 -i 3 -n api -d desc -b http://54.218.43.40:8688/
+    ./create-api.sh -a 54.218.43.40 -i 3 -n api -d description -b http://54.218.43.40:8688/
+```
 
 4. Start the netty backend service
 
+```
 ./netty-start.sh
+```
 
 The netty service can be configured to respond after a delay. The delay is specified in milli-seconds.
 
+```
 ./netty-start.sh -- --delay 5000
+```
 
 ### Running the Test Scripts
 
+```
 Usage:
 ./jmeter.sh -n -t <test_script> -l <jtl_output>
 
 Example Usage:
 ./jmeter.sh -n -t API_Invocation.jmx -l invocation-results.jtl
+```
