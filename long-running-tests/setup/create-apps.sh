@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Copyright 2022 WSO2 Inc. (http://wso2.org)
+# Copyright (c) 2022, WSO2 LLC (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,7 +62,6 @@ done
 shift "$((OPTIND - 1))"
 
 base_https_url="https://${apim_host}"
-#nio_https_url="https://${apim_host}:8243"
 
 curl_command="curl -sk"
 
@@ -150,6 +149,9 @@ sub_manage_token=$(get_access_token sub_manage)
 admin_token=$(get_admin_access_token)
 # temp fix
 get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v2/key-managers")
+# To add subscriber to AM_SUBSCRIBER table. Else, application addition will give an error.
+application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications?query=app1" | jq -r '.list[0] | .applicationId')
+
 mkdir -p "$script_dir/target"
 ## Creating an empty csv file to store the consumer key and consumer secrets of the applications
 echo -n "" > "$script_dir/target/client_credentials.csv"
@@ -161,7 +163,7 @@ count=1
 #Iterate the loop until count is less than or equal to no_of_apps
 while [ $count -le $no_of_apps ]
 do
-    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/applications" | jq -r '.applicationId')
+    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/v2/applications" | jq -r '.applicationId')
     if [ ! -z $application_id ] && [ ! $application_id = "null" ]; then
         echo "Found application id for \"app$count\": $application_id"
     else

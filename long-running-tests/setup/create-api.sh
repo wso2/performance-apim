@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# Copyright 2022 WSO2 Inc. (http://wso2.org)
+# Copyright (c) 2022, WSO2 LLC (http://wso2.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,12 +28,16 @@ backend_endpoint_type="$default_backend_endpoint_type"
 token_type="JWT"
 app_name_prefix="app"
 app_name=""
+vhost=""
+no_of_apps=5
+mediation_sequence=""
 
 function usage() {
     echo ""
     echo "Usage: "
     echo "$0 -a <apim_host> -i <no_of_apis> -n <api_name_prefix>"
     echo "   -d <api_description_prefix> -b <backend_endpoint_url>"
+    echo "   -v <vhost> -p <no_of_apps> [-o <mediation_sequence>]"
     echo "   [-t <backend_endpoint_type>] [-h]"
     echo ""
     echo "-a: Hostname of WSO2 API Manager."
@@ -43,11 +47,14 @@ function usage() {
     echo "-b: Backend endpoint URL."
     echo "-t: Backend endpoint type. Default: $default_backend_endpoint_type."
     echo "-k: Token type."
+    echo "-v: Virtual Host (VHost)"
+    echo "-p: Number of applications to subscribe."
+    echo "-o: Mediation Sequence File Name."
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "a:i:n:d:b:t:k:h" opt; do
+while getopts "a:i:n:d:b:t:k:v:p:o:h" opt; do
     case "${opt}" in
     a)
         apim_host=${OPTARG}
@@ -69,6 +76,15 @@ while getopts "a:i:n:d:b:t:k:h" opt; do
         ;;
     k)
         token_type=${OPTARG}
+        ;;
+    v)
+        vhost=${OPTARG}
+        ;;
+    p)
+        no_of_apps=${OPTARG}
+        ;;
+    o)
+        mediation_sequence=${OPTARG}
         ;;
     h)
         usage
@@ -117,7 +133,6 @@ if [[ -z $backend_endpoint_type ]]; then
 fi
 
 base_https_url="https://${apim_host}"
-nio_https_url="https://${apim_host}:8243"
 
 curl_command="curl -sk"
 
@@ -217,6 +232,18 @@ subscription_request() {
 EOF
 }
 
+revision_deploy_request() {
+    cat <<EOF
+[
+    {
+        "name":"Default",
+        "vhost":"$1",
+        "displayOnDevportal":true
+    }
+]
+EOF
+}
+
 create_api() {
     count=1
  
@@ -275,7 +302,7 @@ create_api() {
         fi
 
         local rev_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d '{"description": "first revision"}' ${base_https_url}/api/am/publisher/v2/apis/${api_id}/revisions | jq -r '.id')
-        local revisionUuid=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d '[{"name": "Default", "vhost": "gw.am.wso2.com" ,"displayOnDevportal": true}]' ${base_https_url}/api/am/publisher/v2/apis/${api_id}/deploy-revision?revisionId=${rev_id} | jq -r '.[0] | .revisionUuid')
+        local revisionUuid=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d "$(revision_deploy_request $vhost)" ${base_https_url}/api/am/publisher/v2/apis/${api_id}/deploy-revision?revisionId=${rev_id} | jq -r '.[0] | .revisionUuid')
 
         echo "Publishing $api_name API"
         local publish_api_status=$($curl_command -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $publish_access_token" -X POST "${base_https_url}/api/am/publisher/v2/apis/change-lifecycle?action=Publish&apiId=${api_id}")
@@ -288,8 +315,53 @@ create_api() {
             return
         fi
 
+        if [ ! -z "$mediation_sequence" ]; then
+            echo "Adding mediation policy to $api_name API"
+            local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F type=in -F mediationPolicyFile=@$script_dir/sequences/$mediation_sequence "${base_https_url}/api/am/publisher/v2/apis/${api_id}/mediation-policies" | jq -r '.id')
+            if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
+                echo "Mediation policy added with ID $sequence_id"
+                echo -ne "\n"
+            else
+                echo "Failed to add mediation policy"
+                echo -ne "\n"
+                return
+            fi
+            echo "Updating $api_name API to set mediation policy..."
+            local api_details=""
+            n=0
+            until [ $n -ge 50 ]; do
+                sleep 10
+                #Get API
+                api_details="$($curl_command -H "Authorization: Bearer $view_access_token" "${base_https_url}/api/am/publisher/v2/apis/${api_id}" || echo "")"
+                if [ -n "$api_details" ]; then
+                    # Update API with sequence
+                    echo "Updating $api_name API to set mediation policy..."
+                    api_details=$(echo "$api_details" | jq -r '.mediationPolicies |= [{"name":"mediation-api-sequence","type":"in"}]')
+                    break
+                fi
+                n=$(($n + 1))
+            done
+            n=0
+            until [ $n -ge 50 ]; do
+                sleep 10
+                local updated_api="$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X PUT -d "$api_details" "${base_https_url}/api/am/publisher/v2/apis/${api_id}")"
+                local updated_api_id=$(echo "$updated_api" | jq -r '.id')
+                if [ ! -z $updated_api_id ] && [ ! $updated_api_id = "null" ]; then
+                    echo "Mediation policy is set to $api_name API with ID $updated_api_id"
+                    local rev_id_2=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d '{"description": "second revision"}' ${base_https_url}/api/am/publisher/v2/apis/${updated_api_id}/revisions | jq -r '.id')
+                    local revisionUuid=$($curl_command -H "Authorization: Bearer $admin_token" -H "Content-Type: application/json" -X POST -d "$(revision_deploy_request $vhost)" ${base_https_url}/api/am/publisher/v2/apis/${updated_api_id}/deploy-revision?revisionId=${rev_id_2} | jq -r '.[0] | .revisionUuid')
+                    sleep 3
+                    break
+                fi
+                n=$(($n + 1))
+            done
+            if [ -z $updated_api_id ] || [ $updated_api_id = "null" ]; then
+                echo "Failed to set mediation policy to $api_name API"
+                return 1
+            fi
+        fi
+
         appCount=1
-        no_of_apps=5
         while [ $appCount -le $no_of_apps ]
         do
             local app_name="$app_name_prefix$appCount"
