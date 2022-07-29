@@ -15,7 +15,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="apim_host" elementType="Argument">
             <stringProp name="Argument.name">apim_host</stringProp>
-            <stringProp name="Argument.value">${__P(host,api.am.wso2.com)}</stringProp>
+            <stringProp name="Argument.value">${__P(host,localhost)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="apim_port" elementType="Argument">
@@ -127,7 +127,7 @@
             </collectionProp>
           </elementProp>
           <stringProp name="HTTPSampler.domain">${apim_host}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.port">${apim_port}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/services/RemoteUserStoreManagerService</stringProp>
@@ -237,7 +237,7 @@
             </collectionProp>
           </elementProp>
           <stringProp name="HTTPSampler.domain">${apim_host}</stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.port">${apim_port}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/services/RemoteUserStoreManagerService</stringProp>

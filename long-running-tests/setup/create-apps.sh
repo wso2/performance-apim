@@ -62,7 +62,6 @@ done
 shift "$((OPTIND - 1))"
 
 base_https_url="https://${apim_host}"
-#nio_https_url="https://${apim_host}:8243"
 
 curl_command="curl -sk"
 

@@ -28,13 +28,14 @@ backend_endpoint_type="$default_backend_endpoint_type"
 token_type="JWT"
 app_name_prefix="app"
 app_name=""
+vhost=""
 
 function usage() {
     echo ""
     echo "Usage: "
     echo "$0 -a <apim_host> -i <no_of_apis> -n <api_name_prefix>"
     echo "   -d <api_description_prefix> -b <backend_endpoint_url>"
-    echo "   [-t <backend_endpoint_type>] [-h]"
+    echo "   -v <vhost> [-t <backend_endpoint_type>] [-h]"
     echo ""
     echo "-a: Hostname of WSO2 API Manager."
     echo "-i: Number of APIs."
@@ -43,11 +44,12 @@ function usage() {
     echo "-b: Backend endpoint URL."
     echo "-t: Backend endpoint type. Default: $default_backend_endpoint_type."
     echo "-k: Token type."
+    echo "-v: Virtual Host (VHost)"
     echo "-h: Display this help and exit."
     echo ""
 }
 
-while getopts "a:i:n:d:b:t:k:h" opt; do
+while getopts "a:i:n:d:b:t:k:v:h" opt; do
     case "${opt}" in
     a)
         apim_host=${OPTARG}
@@ -69,6 +71,9 @@ while getopts "a:i:n:d:b:t:k:h" opt; do
         ;;
     k)
         token_type=${OPTARG}
+        ;;
+    v)
+        vhost=${OPTARG}
         ;;
     h)
         usage
@@ -117,7 +122,6 @@ if [[ -z $backend_endpoint_type ]]; then
 fi
 
 base_https_url="https://${apim_host}"
-nio_https_url="https://${apim_host}:8243"
 
 curl_command="curl -sk"
 
@@ -217,6 +221,18 @@ subscription_request() {
 EOF
 }
 
+revision_deploy_request() {
+    cat <<EOF
+[
+    {
+        "name":"Default",
+        "vhost":"$1",
+        "displayOnDevportal":true
+    }
+]
+EOF
+}
+
 create_api() {
     count=1
  
@@ -275,7 +291,7 @@ create_api() {
         fi
 
         local rev_id=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d '{"description": "first revision"}' ${base_https_url}/api/am/publisher/v2/apis/${api_id}/revisions | jq -r '.id')
-        local revisionUuid=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d '[{"name": "Default", "vhost": "gw.am.wso2.com" ,"displayOnDevportal": true}]' ${base_https_url}/api/am/publisher/v2/apis/${api_id}/deploy-revision?revisionId=${rev_id} | jq -r '.[0] | .revisionUuid')
+        local revisionUuid=$($curl_command -H "Authorization: Bearer $create_access_token" -H "Content-Type: application/json" -X POST -d "$(revision_deploy_request $vhost)" ${base_https_url}/api/am/publisher/v2/apis/${api_id}/deploy-revision?revisionId=${rev_id} | jq -r '.[0] | .revisionUuid')
 
         echo "Publishing $api_name API"
         local publish_api_status=$($curl_command -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $publish_access_token" -X POST "${base_https_url}/api/am/publisher/v2/apis/change-lifecycle?action=Publish&apiId=${api_id}")
