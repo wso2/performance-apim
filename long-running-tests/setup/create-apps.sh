@@ -149,6 +149,9 @@ sub_manage_token=$(get_access_token sub_manage)
 admin_token=$(get_admin_access_token)
 # temp fix
 get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v2/key-managers")
+# To add subscriber to AM_SUBSCRIBER table. Else, application addition will give an error.
+application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications?query=app1" | jq -r '.list[0] | .applicationId')
+
 mkdir -p "$script_dir/target"
 ## Creating an empty csv file to store the consumer key and consumer secrets of the applications
 echo -n "" > "$script_dir/target/client_credentials.csv"
