@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="mediation-api-sequence">
+   <log level="custom">
+        <property name="IN_MESSAGE" value="IN_MESSAGE"/>
+    </log>
+    <property name="Accept" scope="transport" action="remove"/>
+</sequence>

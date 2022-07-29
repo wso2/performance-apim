@@ -160,7 +160,7 @@ count=1
 #Iterate the loop until count is less than or equal to no_of_apps
 while [ $count -le $no_of_apps ]
 do
-    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/applications" | jq -r '.applicationId')
+    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/v2/applications" | jq -r '.applicationId')
     if [ ! -z $application_id ] && [ ! $application_id = "null" ]; then
         echo "Found application id for \"app$count\": $application_id"
     else

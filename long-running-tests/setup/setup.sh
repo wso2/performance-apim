@@ -62,10 +62,14 @@ done
 shift "$((OPTIND - 1))"
 
 ## Create Applications
-./create-apps.sh -a $apim_host -n 5 -k JWT
+$script_dir/create-apps.sh -a $apim_host -n 5 -k JWT
 
 ## Create APIs
-./create-api.sh -a $apim_host -i 5 -n sample -d desc -b $backend_endpoint_url -v $vhost
+$script_dir/create-api.sh -a $apim_host -i 5 -n sample -d desc -b $backend_endpoint_url -v $vhost
+
+## Create API with Mediation Sequence
+$script_dir/create-api.sh -a $apim_host -i 1 -n mediationSample -d mediationDesc \
+    -b $backend_endpoint_url -v $vhost -o mediation-api-sequence.xml
 
 ## Generate JWT Tokens
-./generate-jwt-tokens.sh -t 1000
+$script_dir/generate-jwt-tokens.sh -t 1000
