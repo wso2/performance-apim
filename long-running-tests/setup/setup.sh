@@ -61,6 +61,8 @@ while getopts "a:b:v:h" opt; do
 done
 shift "$((OPTIND - 1))"
 
+mkdir -p "$script_dir/target"
+
 ## Create Applications
 $script_dir/create-apps.sh -a $apim_host -n 5 -k JWT
 
@@ -72,4 +74,4 @@ $script_dir/create-api.sh -a $apim_host -i 1 -n mediationSample -d mediationDesc
     -b $backend_endpoint_url -v $vhost -o mediation-api-sequence.xml
 
 ## Generate JWT Tokens
-$script_dir/generate-jwt-tokens.sh -t 1000
+$script_dir/generate-jwt-tokens.sh -a $apim_host -t 1000

@@ -44,6 +44,23 @@ The [netty-service](netty-service) directory has the netty service artifacts whi
 
 1. Run the `TestData_Add_Super_Tenant_Users.jmx` script to create users in the super tenant domain. The script has been configured to create 50 users.
 
+```
+Example Usage:
+./jmeter.sh -n -t TestData_Add_Super_Tenant_Users.jmx -l user-creation.jtl
+```
+
+This script has been configured to run with the following default values.
+
+- host=localhost
+- port=9443
+
+It is possible to override these by passing the values as command line arguments.
+
+```
+Example Usage:
+./jmeter.sh -n -t TestData_Add_Super_Tenant_Users.jmx -l user-creation.jtl -Jhost=api.am.wso2.com -Jport=9443
+```
+
 2. Run the `setup.sh` to setup the environment to run the long running tests. The following will occur when the `setup.sh` is executed.
 
     - Create applications and generate keys in the Developer Portal. The consumer key, consumer secret of each application will be written to `target/client_credentials.csv` file. The application names will have "app" as the prefix followed by a number such as app1, app2, app3. The script has been configured to create 5 applications.
