@@ -247,3 +247,6 @@ notification_endpoint = "https://localhost:${mgt.transport.https.port}/internal/
 username = "${admin.username}"
 password = "${admin.password}"
 'header.X-WSO2-KEY-MANAGER' = "default"
+
+[system.parameter]
+'passthrough.metrics.collection.disabled' = true
