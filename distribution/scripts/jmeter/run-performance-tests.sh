@@ -20,6 +20,7 @@
 # ----------------------------------------------------------------------------
 
 script_dir=$(dirname "$0")
+graphql_query=""
 # Execute common script
 . $script_dir/perf-test-common.sh
 
@@ -38,22 +39,12 @@ function initialize() {
 export -f initialize
 
 declare -A test_scenario0=(
-    [name]="passthrough"
-    [display_name]="Passthrough"
-    [description]="A secured API, which directly invokes the back-end service."
-    [jmx]="apim-test.jmx"
+    [name]="starwars"
+    [display_name]="StarwarsGraphqlApi"
+    [description]="A secured GraphQL API, which directly invokes the backend service."
+    [jmx]="apim-graphql-test.jmx"
     [protocol]="https"
-    [path]="/echo/1.0.0"
-    [use_backend]=true
-    [skip]=false
-)
-declare -A test_scenario1=(
-    [name]="transformation"
-    [display_name]="Transformation"
-    [description]="A secured API, which has a mediation extension to modify the message."
-    [jmx]="apim-test.jmx"
-    [protocol]="https"
-    [path]="/mediation/1.0.0"
+    [path]="/starwars/1.0.0"
     [use_backend]=true
     [skip]=false
 )
@@ -61,9 +52,20 @@ declare -A test_scenario1=(
 function before_execute_test_scenario() {
     local service_path=${scenario[path]}
     local protocol=${scenario[protocol]}
+
+    if [ "$queryNumber" == 1 ]; then
+        graphql_query='query q1 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } }'
+    elif [ "$queryNumber" == 2 ]; then
+        graphql_query='query q2 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } search (text: \"Luke Skywalker\") { ... on Human { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } ... on Droid { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } ... on Starship { id name length coordinates } } character (id: \"1000\") { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } droid (id: \"2000\"){ id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } }'
+    elif [ "$queryNumber" == 3 ]; then
+        graphql_query='query q3 { hero { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } search (text: \"Luke Skywalker\") { ... on Human { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } ... on Droid { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } ... on Starship { id name length coordinates } } character (id: \"1000\") { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } droid (id: \"2000\"){ id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } human (id: \"1000\") { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } allHumans { id name homePlanet height mass friends { id name appearsIn } friendsConnection { totalCount } appearsIn starships { id name length coordinates } } allDroids { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn primaryFunction } allCharacters { id name friends { id name appearsIn } friendsConnection { totalCount } appearsIn } starship (id: \"3000\") { id name length coordinates } }'
+    else
+        echo "Provided query number is not valid."
+        exit 1
+    fi
+
     jmeter_params+=("host=$apim_host" "port=8243" "path=$service_path")
-    jmeter_params+=("payload=$HOME/${msize}B.json" "response_size=${msize}B" "protocol=$protocol"
-        tokens="$HOME/tokens.csv")
+    jmeter_params+=("query_number=${queryNumber}" "protocol=$protocol" "tokens=$HOME/tokens.csv" "query='${graphql_query}'")
     echo "Starting APIM service"
     ssh $apim_ssh_host "./apim/apim-start.sh -m $heap"
 }
@@ -72,7 +74,7 @@ function after_execute_test_scenario() {
     write_server_metrics apim $apim_ssh_host org.wso2.carbon.bootstrap.Bootstrap
     download_file $apim_ssh_host wso2am/repository/logs/wso2carbon.log wso2carbon.log
     download_file $apim_ssh_host wso2am/repository/logs/gc.log apim_gc.log
-    #download_file $apim_ssh_host wso2am/repository/logs/recording.jfr recording.jfr
+    # download_file $apim_ssh_host wso2am/repository/logs/recording.jfr recording.jfr
 }
 
 test_scenarios

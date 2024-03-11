@@ -118,7 +118,7 @@ public class JWTGenerator {
                 jwtTokenInfo.put("keytype", "PRODUCTION");
                 jwtTokenInfo.put("exp", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                         + VALIDITY_PERIOD);
-                jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));        
+                jwtTokenInfo.put("nbf", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
                 jwtTokenInfo.put("azp", consumerKey);

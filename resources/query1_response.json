@@ -1,0 +1,45 @@
+{
+  "data": {
+    "hero": {
+      "id": "2001",
+      "name": "R2-D2",
+      "friends": [
+        {
+          "id": "1000",
+          "name": "Luke Skywalker",
+          "appearsIn": [
+            "NEWHOPE",
+            "EMPIRE",
+            "JEDI"
+          ]
+        },
+        {
+          "id": "1002",
+          "name": "Han Solo",
+          "appearsIn": [
+            "NEWHOPE",
+            "EMPIRE",
+            "JEDI"
+          ]
+        },
+        {
+          "id": "1003",
+          "name": "Leia Organa",
+          "appearsIn": [
+            "NEWHOPE",
+            "EMPIRE",
+            "JEDI"
+          ]
+        }
+      ],
+      "friendsConnection": {
+        "totalCount": 3
+      },
+      "appearsIn": [
+        "NEWHOPE",
+        "EMPIRE",
+        "JEDI"
+      ]
+    }
+  }
+}

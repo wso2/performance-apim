@@ -1,0 +1,163 @@
+query q3 {
+	hero {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+	search (text: "Luke Skywalker") {
+    ... on Human {
+      id
+      name
+      homePlanet
+      height
+      mass
+      friends {
+        id
+        name
+        appearsIn
+      }
+      friendsConnection {
+        totalCount
+      }
+      appearsIn
+      starships {
+        id
+        name
+        length
+        coordinates
+      }
+    }
+    ... on Droid {
+      id
+      name
+      friends {
+        id
+        name
+        appearsIn
+      }
+      friendsConnection {
+        totalCount
+      }
+      appearsIn
+      primaryFunction
+    }
+    ... on Starship {
+      id
+      name
+      length
+      coordinates
+    }
+  }
+  character (id: "1000") {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+  droid (id: "2000"){
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+    primaryFunction
+  }
+  human (id: "1000") {
+  	id
+    name
+    homePlanet
+    height
+    mass
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+    starships {
+      id
+      name
+      length
+      coordinates
+    }
+  }
+  allHumans {
+  	id
+    name
+    homePlanet
+    height
+    mass
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+    starships {
+      id
+      name
+      length
+      coordinates
+    }
+  }
+  allDroids {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+    primaryFunction
+  }
+  allCharacters {
+    id
+    name
+    friends {
+      id
+      name
+      appearsIn
+    }
+    friendsConnection {
+      totalCount
+    }
+    appearsIn
+  }
+  starship (id: "3000") {
+    id
+    name
+    length
+    coordinates
+  }
+}

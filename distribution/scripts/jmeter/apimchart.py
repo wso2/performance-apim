@@ -25,10 +25,15 @@ import seaborn as sns
 df_charts = None
 
 
-def format_bytes(b):
-    if b >= 1024 and b % 1024 == 0:
-        return str(b // 1024) + 'KiB'
-    return str(b) + 'B'
+def format_query_number(q):
+    if q == 1:
+        return 'Query ' + str(q) + ' (Operation count: 1 | Query depth: 2 | Query size: 157B | Response size: 790B)'
+    elif q == 2:
+        return 'Query ' + str(q) + ' (Operation count: 4 | Query depth: 2 | Query size: 1KB | Response size: 5KB)'
+    elif q == 3:
+        return 'Query ' + str(q) + ' (Operation count: 9 | Query depth: 2 | Query size: 2KB | Response size: 27KB)'
+    else:
+        return q
 
 
 def format_time(t):
@@ -55,7 +60,7 @@ atexit.register(save_charts_details)
 
 
 def save_multi_columns_categorical_charts(df, chart, columns, y, hue, title, single_statistic=False,
-                                          single_statistic_name=None, kind='point', col='Message Size (Bytes)'):
+                                          single_statistic_name=None, kind='point', col='GraphQL Query Number'):
     filename = chart + ".png"
     print("Creating chart: " + title + ", File name: " + filename)
     add_chart_details(title, filename)
