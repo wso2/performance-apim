@@ -88,9 +88,10 @@ public class JWTGenerator {
         long startTime = System.nanoTime();
 
         JSONObject head = new JSONObject();
-        head.put("x5t", "N2JjMjNiM2ExYjRkNzZjZmY1YTAxNmFlNjg4OWU1YWQ2Yzc1NmY5NQ");
-        head.put("kid", "MDJlNjIxN2E1OGZlOGVmMGQxOTFlMzBmNmFjZjQ0Y2YwOGY0N2I0YzE4YzZjNjRhYmRmMmQ0ODdiNDhjMGEwMA_RS256");
+        head.put("x5t", "MWIyNDI5YjE2ZWY1ODMwMWI3NGZmMTYyNTM2NTVhZTg1NTM3ZTNhNWJmZDE1OTA4NWE1YThlMjNlNWEzYjIyYQ");
+        head.put("kid", "MWIyNDI5YjE2ZWY1ODMwMWI3NGZmMTYyNTM2NTVhZTg1NTM3ZTNhNWJmZDE1OTA4NWE1YThlMjNlNWEzYjIyYQ_RS256");
         head.put("alg", "RS256");
+        head.put("typ", "at+jwt");
         
         String header = head.toString();
 
@@ -122,6 +123,7 @@ public class JWTGenerator {
                 jwtTokenInfo.put("iat", (int) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 jwtTokenInfo.put("jti", UUID.randomUUID());
                 jwtTokenInfo.put("azp", consumerKey);
+                jwtTokenInfo.put("client_id", consumerKey);
 
                 String payload = jwtTokenInfo.toString();
                 String base64UrlEncodedBody = Base64.getUrlEncoder()

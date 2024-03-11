@@ -120,7 +120,7 @@
       DBInstanceClass: !Ref WSO2APIManagerDBInstanceClass
       AllocatedStorage: '5'
       Engine: 'MySQL'
-      EngineVersion: '5.7'
+      EngineVersion: '8.0'
       BackupRetentionPeriod: '0'
       MasterUsername: !Ref MasterUsername
       MasterUserPassword: !Ref MasterUserPassword
