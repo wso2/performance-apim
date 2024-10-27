@@ -42,7 +42,7 @@ def save_line_chart(chart, column, title, ylabel=None):
     fig.subplots_adjust(bottom=0.3)
     fig.set_size_inches(8, 6)
     sns_plot = sns.pointplot(x="Concurrent Users", y=column, hue="GraphQL Query Number",
-                             data=df.loc[df['Back-end Service Delay (ms)'] == sleep_time], ci=None, dodge=True)
+                             data=df.loc[df['Back-end Service Delay (ms)'] == sleep_time], errorbar=None, dodge=True)
     # ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
     # plt.title("Memory = " + df['Heap Size'][0] + ", Backend Service Delay = " + backendDelay + "ms")
@@ -66,7 +66,7 @@ def save_bar_chart(title):
          '99th Percentile of Response Time (ms)', 'Maximum Response Time (ms)']]
     df_results = df_results.set_index(['GraphQL Query Number', 'Concurrent Users']).stack().reset_index().rename(
         columns={'level_2': 'Summary', 0: 'Response Time (ms)'})
-    sns.barplot(x='Concurrent Users', y='Response Time (ms)', hue='Summary', data=df_results, ci=None)
+    sns.barplot(x='Concurrent Users', y='Response Time (ms)', hue='Summary', data=df_results, errorbar=None)
     ax.yaxis.set_major_formatter(tkr.FuncFormatter(lambda y, p: "{:,}".format(y)))
     plt.suptitle(title)
     plt.legend(loc=2, frameon=True, title="Response Time Summary")
