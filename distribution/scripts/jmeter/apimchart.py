@@ -43,7 +43,7 @@ def add_chart_details(title, filename):
     if df_charts is None:
         df_charts = df
     else:
-        df_charts = df_charts.append(df)
+        df_charts = pd.concat([df_charts,df])
 
 
 def save_charts_details():
@@ -65,10 +65,10 @@ def save_multi_columns_categorical_charts(df, chart, columns, y, hue, title, sin
     df_results = df[all_columns]
     df_results = df_results.set_index([col, 'Concurrent Users']).stack().reset_index().rename(
         columns={'level_2': hue, 0: y})
-    g = sns.factorplot(x="Concurrent Users", y=y,
+    g = sns.catplot(x="Concurrent Users", y=y,
                        hue=hue, col=col,
                        data=df_results, kind=kind,
-                       size=5, aspect=1, col_wrap=2, legend=False)
+                       height=5, aspect=1, col_wrap=2, legend=False)
     for ax in g.axes.flatten():
         ax.yaxis.set_major_formatter(
             tkr.FuncFormatter(lambda y_value, p: "{:,}".format(y_value)))
