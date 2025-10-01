@@ -88,8 +88,8 @@ public class JWTGenerator {
         long startTime = System.nanoTime();
 
         JSONObject head = new JSONObject();
-        head.put("x5t", "MzAzMTFjODQ1MDNjOTU1ZDA4NGQ5MDkzYzE3MWI4MmRlZGU3YzZjYjk4ZGRkM2RhMmIwMjAxYzJlMGJjNjdmNw");
-        head.put("kid", "MzAzMTFjODQ1MDNjOTU1ZDA4NGQ5MDkzYzE3MWI4MmRlZGU3YzZjYjk4ZGRkM2RhMmIwMjAxYzJlMGJjNjdmNw_RS256");
+        head.put("x5t", "MzNkZjU3YmZhZDdiNDZmZGU2ZmRlOThhOWUzNWE3MjQ4ZDFjNWY4Mw");
+        head.put("kid", "ODBmMTU0ZjJjODJkNGY1ZThmYjk2YTYzNzRjYzIzMTBlYjE0MWJkY2IxNjg3ODdjYWQ5ZWZhNWI0NDA3ZjM4NQ_RS256");
         head.put("alg", "RS256");
         head.put("typ", "at+jwt");
         
