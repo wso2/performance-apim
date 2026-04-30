@@ -5,10 +5,10 @@ During each release, we execute various automated performance test scenarios and
 | Test Scenarios | Description |
 | --- | --- |
 | AI API Direct | Direct invocation of the mock AI backend, bypassing the API gateway. |
-| AI API Auth No Guardrails | AI API invocation through the API gateway with OAuth2 authentication enabled and no guardrails. |
-| AI API Request PII Masking | AI API invocation through the API gateway with authentication and PII masking on the request only. |
-| AI API PII Masking | AI API invocation through the API gateway with authentication and PII masking on request and response. |
-| AI API Advanced Guardrails | AI API invocation through the API gateway with authentication, request PII masking, URL and JSON schema guardrails, and response PII masking. |
+| AI API Auth No Guardrails | AI API invocation through the API gateway with OAuth2 authentication enabled and no guardrails. Includes throttling and analytics functionalities. |
+| AI API Request PII Masking | AI API invocation through the API gateway with authentication and PII masking on the request only. Includes throttling and analytics functionalities. |
+| AI API PII Masking | AI API invocation through the API gateway with authentication and PII masking on request and response. Includes throttling and analytics functionalities. |
+| AI API Advanced Guardrails | AI API invocation through the API gateway with authentication, request PII masking, URL and JSON schema guardrails, and response PII masking. Includes throttling and analytics functionalities. |
 
 The direct back-end scenario is included as the baseline for comparing the additional gateway features exercised by the
 other scenarios. All gateway-based scenarios are executed through the AI API runtime path in WSO2 API Manager with the
