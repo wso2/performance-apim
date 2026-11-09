@@ -194,7 +194,7 @@
 
     <properties>
         <jcommander.version>1.72</jcommander.version>
-        <org.json.version>20180813</org.json.version>
+        <org.json.version>20260719</org.json.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <performance.apim.version>0.1.1-SNAPSHOT</performance.apim.version>
         <performance.common.version>0.4.6-SNAPSHOT</performance.common.version>
